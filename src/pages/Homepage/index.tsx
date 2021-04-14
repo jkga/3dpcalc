@@ -222,8 +222,8 @@ const Homepage = () => {
             </Form.Field>
 
             { ((powerMonthlyConsumption && powerMonthlyDue) || '') && <Message size='tiny' color='green'>
-                <p><Icon name='info' />You have a total energy consumption of PHP <u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || ''}</u> per <u>{powerConsumptionPerHour}kWh</u> based on your recent usage (30 Days) with an 
-                <em> <Label>hourly</Label> rate of <u>PHP{((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0) }</u></em>
+                <p><Icon name='info' />You have a total energy consumption of PHP <u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
+                <em> <Label>hourly</Label> rate of <Label>PHP{((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0) }</Label></em> equivalent to <u>{powerConsumptionPerHour}kWh</u>
                 </p><br/>
                 <p>Please enter your power supply's wattage to get more acurate results</p>
                 <Image as='div' src={watts} width={'100%'} className='bill'/>
@@ -232,7 +232,8 @@ const Homepage = () => {
                   <input type="number" placeholder='Watts' min={0} style={{width: '90%'}} value={printerRatedPower || ''} onChange={(e) => setPrinterRatedPower(e.target.value)}/>
                 </Form.Field>
                 { ((printerPowerEnergyConsumption && printerRatedPower) || '') && 
-                  <p style={{color: 'red'}}>New total energy consumption: PHP<u>{printerPowerEnergyConsumption}</u> per <u>{printerPowerConsumptionPerHour}kWh</u></p>
+                  <p style={{color: 'red'}}>New total energy consumption: PHP<u>{printerPowerEnergyConsumption}</u>/kWh <br/>
+                  Estimated hourly consumption: <u>{printerPowerConsumptionPerHour}kW</u></p>
                 }
               </Message>
             }
@@ -241,7 +242,7 @@ const Homepage = () => {
           <br/><br/>
           
           <Form.Field>
-            <label>Amount/kWh <b>(PHP)</b></label>
+            <label>Amount/hour <b>(PHP)</b></label>
             <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
           </Form.Field>
 
