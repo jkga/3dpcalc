@@ -101,7 +101,16 @@ const Homepage = () => {
           </Menu.Item>
 
           <Menu.Item>
-            <Header as="h1">3D Print Calculator<Header.Subheader>Calculate your 3d printing cost</Header.Subheader></Header>
+            <Header as="h1">
+              3D Print Calculator
+              <Header.Subheader>Calculate your 3d printing cost</Header.Subheader>
+              <Header.Subheader>
+                <small>
+                  <Icon name='github'/>
+                  <a href="https://github.com/jkga/3dpcalc">https://github.com/jkga/3dpcalc</a>
+                </small>
+              </Header.Subheader>
+            </Header>
           </Menu.Item>
         </Menu.Menu>
       </Menu>
