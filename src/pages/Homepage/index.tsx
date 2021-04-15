@@ -132,7 +132,7 @@ const Homepage = () => {
         </Menu.Menu>
       </Menu>
 
-      <Step.Group ordered fluid size="mini" className="hidden-xs">
+      <Step.Group ordered unstackable size="mini" className="hidden-xs mainStepper">
         <Step completed={Boolean(filamentAmount)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
             <Step.Title>Filament</Step.Title>

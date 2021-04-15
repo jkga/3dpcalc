@@ -1,6 +1,3 @@
-.logo > img {
-  width: 120px;
-}
 
 .hidden-xs {
   display: block;
@@ -16,6 +13,23 @@
 
 .visible-xs {
   display: none;
+}
+
+.logo > img {
+  width: 120px;
+}
+
+.mainStepper {
+  width: 100%;
+  overflow-y: auto;
+}
+
+.mainStepper::-webkit-scrollbar-thumb {
+  background: teal;
+}
+
+.mainStepper::-webkit-scrollbar-track {
+  background: rgb(235,235,235);
 }
 
 @media (min-width: 481px) and (max-width: 767px) {
