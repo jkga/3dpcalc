@@ -19,6 +19,10 @@
   width: 120px;
 }
 
+.mainContainer {
+  width: 600px;
+}
+
 .mainStepper {
   width: 100%;
   overflow-y: auto;

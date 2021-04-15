@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button } from 'semantic-ui-react'
+import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox } from 'semantic-ui-react'
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
@@ -7,6 +7,7 @@ import './index.css'
 
 const Homepage = () => {
   const [activeStep, setActiveStep] : any = useState <number>(0)
+  const [showOtherChargingOptions, setShowOtherChargingOptions] : any = useState <boolean>(false)
   const [filamentWeight, setFilamentWeight] : any = useState <number >(0);
   const [filamentPrice, setFilamentPrice]: any = useState <number | string>(0);
   const [filamentAmount, setFilamentAmount]: any = useState <number | string>(0);
@@ -14,21 +15,37 @@ const Homepage = () => {
   const [printTimeHours, setPrintTimeHours]: any = useState <number | string>(0);
   const [printTimeMinutes, setPrintTimeMinutes]: any = useState <number | string>(0);
   
+  // power consumption from recent bill
   const [powerMonthlyConsumption, setPowerMonthlyConsumption]: any = useState <number | string>(0);
   const [powerMonthlyDue, setPowerMonthlyDue]: any = useState <number | string>(0);
   const [powerConsumptionPerHour, setPowerConsumptionPerHour]: any = useState <number | string>(0);
 
+  // power consumption
   const [printerPowerEnergyConsumption, setPrinterPowerEnergyConsumption]: any = useState <number | string>(0);
   const [printerPowerConsumptionPerHour, setPrinterPowerConsumptionPerHour]: any = useState <number | string>(0);
-
   const [printerRatedPower, setPrinterRatedPower]: any = useState <number | string>(0);
 
+  // 30% initial markup for 3d printing cost
+  const [markup, setMarkup]: any = useState <number>(30);
+  const [totalMarkup, setTotalMarkup]: any = useState <number>(0);
+  const [totalCostWithMarkup, setTotalCostWithMarkup]: any = useState <number>(0);
+  const [profit, setProfit]: any = useState <number>(0);
+
+  // additional options
+  const [setupFee, setSetupFee] : any = useState <number>(0)
+  const [packagingFee, setPackagingFee] : any = useState <number>(0)
+  const [deliveryFee, setDeliveryFee] : any = useState <number>(0)
+  const [otherFee, setOtherFee] : any = useState <number>(0)
+  
+  // computed total amount
   const [totalPrintTime, setTotalPrintTime]: any = useState <number | string>(0);
   const [totalPrintCostPerGram, setTotalPrintCostPerGram]: any = useState <number | string>(0);
   const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState <number | string>(0);
   const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState <number | string>(0);
-
-
+  
+  /**
+   * Filament / Material
+   */
   useEffect (() => {
     let filamentAmountPerGram: number = 0
     // convert filament in kg to g and divide by the acquired cost
@@ -39,6 +56,9 @@ const Homepage = () => {
     setTotalPrintCostPerGram (filamentAmountPerGram * parseFloat(printWeight || 0))
   }, [filamentWeight, filamentPrice, printWeight])
 
+  /**
+   * Print Output: Time
+   */
   useEffect (() => {
     // convert hours to minutes
     setTotalPrintTime(parseFloat(printTimeMinutes || 0) + (parseFloat(printTimeHours || 0) * 60))
@@ -80,7 +100,6 @@ const Homepage = () => {
     setTotalPrintCostPerHour(totalPrintEnergyConsumption * totalPrintHours)
   }, [totalPrintTime,totalPrintEnergyConsumption])
 
-
   useEffect (() => {
     // convert hours to minutes
     //setTotalPrintTime(parseFloat(printTimeMinutes || 0) + (parseFloat(printTimeHours || 0) * 60))
@@ -93,6 +112,29 @@ const Homepage = () => {
     setTotalPrintEnergyConsumption(energyConsumption * kWh)
 
   }, [powerMonthlyConsumption, powerMonthlyDue])
+
+  /**
+   * Other Charges
+   */
+  useEffect(() => {
+    let __totalPrice: number = parseFloat(totalPrintCostPerGram || 0) + parseFloat(totalPrintCostPerHour || 0)
+    let __markup: number = __totalPrice * (parseFloat(markup) / 100)
+    let __total: number = __totalPrice + __markup
+    let __totalOtherChargingOptions = parseFloat(setupFee || 0) + parseFloat(deliveryFee || 0) + parseFloat(packagingFee || 0) +  parseFloat(otherFee || 0)
+    setTotalMarkup(__markup)
+    setProfit (__markup + __totalOtherChargingOptions)
+    setTotalCostWithMarkup (__total + __totalOtherChargingOptions)
+  }, [totalPrintCostPerHour, totalPrintCostPerGram, markup, setupFee, deliveryFee, packagingFee, otherFee, showOtherChargingOptions])
+
+  /**
+   * Clear value of other charging options
+   */
+  useEffect(() => {
+    setSetupFee(0)
+    setOtherFee(0)
+    setPackagingFee(0)
+    setDeliveryFee(0)
+  }, [showOtherChargingOptions])
 
   const Paginator = (opt:any = {}) => {
     return(
@@ -112,6 +154,7 @@ const Homepage = () => {
 
   return (
     <Container text>
+      { /* Banner And Logo */}
       <Menu secondary style={{padding: '20px'}}>
         <Menu.Menu position='left'>
           <Menu.Item className='hidden-xs logo-section'>
@@ -132,6 +175,7 @@ const Homepage = () => {
         </Menu.Menu>
       </Menu>
 
+      { /* Main Navigation */}
       <Step.Group ordered unstackable size="mini" className="hidden-xs mainStepper">
         <Step completed={Boolean(filamentAmount)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
@@ -161,6 +205,7 @@ const Homepage = () => {
         </Step>
       </Step.Group>
 
+      { /* Filament */}
       <Container style={{display: activeStep === 0 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
@@ -185,6 +230,7 @@ const Homepage = () => {
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
       </Container>
 
+      { /* Print Output */}
       <Container style={{display: activeStep === 1 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
@@ -214,7 +260,8 @@ const Homepage = () => {
           <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='print' /></Divider>
         </Form>
       </Container>
-
+      
+      { /* Power Consumption */}
       <Container style={{display: activeStep === 2 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
@@ -227,6 +274,7 @@ const Homepage = () => {
             <p>Please click the "Show Computation" text below for instructions</p>
           </Message>
 
+          { /* Advance Power Consumption's Computation */}
           <details style={{paddingBottom: 20, marginBottom: 30}}>
             <summary>Show Computation</summary><br/>
             <Message color='grey'>
@@ -247,6 +295,7 @@ const Homepage = () => {
               <input type="number" placeholder='Enter Amount' min={0}  value={powerMonthlyDue || ''} onChange={(e) => {  setPowerMonthlyDue(e.target.value); setPrinterRatedPower(0); }}/>
             </Form.Field>
 
+            { /* Power Consumption Results */}
             { ((powerMonthlyConsumption && powerMonthlyDue) || '') && <Message size='tiny' color='green'>
                 <p><Icon name='info' />You have a total energy consumption of PHP <u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
                 <em> <Label>hourly</Label> rate of <Label>PHP{((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0) }</Label></em> equivalent to <u>{powerConsumptionPerHour}kWh</u>
@@ -264,6 +313,7 @@ const Homepage = () => {
               </Message>
             }
           </details>
+
           <Form.Field>
             <label>Amount/hour <b>(PHP)</b></label>
             <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
@@ -274,27 +324,85 @@ const Homepage = () => {
       </Container>
 
       <Container style={{display: activeStep === 3 ? 'block': 'none'}}>
+      { /* Total Printing Cost*/}
         <Form style={{paddingTop: 30}}> 
-          <Header as='h3' dividing>Total Cost</Header>
+          <Header as='h3' dividing>Total Printing Cost</Header>
           <p>
-            <Label color='teal'>
-              <Icon name='cube'/> PHP 
-              <Label.Detail>{totalPrintCostPerGram || 0}</Label.Detail>
+            <Label color='teal' style={{margin: 5}}>
+              <Icon name='cube'/> Material
+              <Label.Detail>PHP {totalPrintCostPerGram || 0}</Label.Detail>
             </Label>
           </p>
           <p>
-            <Label color='teal'>
-              <Icon name='coffee'/> Printing Hour Cost: 
+            <Label color='teal' style={{margin: 5}}>
+              <Icon name='coffee'/> Printing Hour: 
               <Label.Detail>PHP {totalPrintCostPerHour || 0}</Label.Detail>
             </Label>
           </p>
           <p>
-            <Label color='teal'>
-              <Icon name='check circle'/> Total
+            <Label color='teal' style={{margin: 5}}>
+              <Icon name='check circle'/> Total Cost
               <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
             </Label>
           </p>
         </Form>
+        
+        { /* Markup */}
+        <Form style={{paddingTop: 30}}> 
+          <Header as='h3' dividing>Markup</Header>
+          <Form.Field>
+            <label>Percentage %</label>
+            <input type="number" placeholder='Energy Consumption per kWh' min={0} value={markup || ''} onChange={(e) => setMarkup(e.target.value)}/>
+            { (totalMarkup || '') && <p style={{margin: 5}}><Label color='teal'>
+                  <Icon name='plus'/> Markup
+                  <Label.Detail>PHP {totalMarkup}</Label.Detail>
+                </Label>
+              </p>
+            }
+          </Form.Field>
+          
+          { /* Other Charging Options */}
+          <p><Checkbox label='Show other charging options' onChange={(_e, data) => setShowOtherChargingOptions(data.checked)} /></p>
+          { (showOtherChargingOptions || '') &&
+            <Container>
+              <Form.Field>
+                <label>Setup Fee (initial setup)</label>
+                <input type="number" placeholder='Enter Amount' min={0} value={setupFee || ''} onChange={(e) => setSetupFee(e.target.value)}/>
+              </Form.Field>
+
+              <Form.Field>
+                <label>Packaging</label>
+                <input type="number" placeholder='Enter Amount' min={0} value={packagingFee || ''} onChange={(e) => setPackagingFee(e.target.value)}/>
+              </Form.Field>
+
+              <Form.Field>
+                <label>Delivery Fee</label>
+                <input type="number" placeholder='Enter Amount' min={0} value={deliveryFee || ''} onChange={(e) => setDeliveryFee(e.target.value)}/>
+              </Form.Field>
+
+              <Form.Field>
+                <label>Others (glue, pei sheet, etc...)</label>
+                <input type="number" placeholder='Enter Amount' min={0} value={otherFee|| ''} onChange={(e) => setOtherFee(e.target.value)}/>
+              </Form.Field>
+            </Container>
+          }
+        </Form>
+
+        { /* Final Price */}
+        <Container style={{marginTop: 50, paddingBottom: 100}}>
+          <Header as='h3' dividing>Final Price</Header>
+          <p>
+            <Label color='green' style={{margin: 5}}>
+              <Icon name='check circle'/> Total
+              <Label.Detail>PHP {totalCostWithMarkup}</Label.Detail>
+            </Label>
+            <Label color='yellow' style={{margin: 5}}>
+              <Icon name='check circle'/> Profit (markup + other charges)
+              <Label.Detail>PHP {profit}</Label.Detail>
+            </Label>
+          </p>
+        </Container>
+
         <Paginator backStep={2}/>
       </Container>
     </Container>
