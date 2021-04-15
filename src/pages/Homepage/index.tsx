@@ -291,7 +291,7 @@ const Homepage = () => {
 
           <Form.Field>
             <label>{ printerType === 'fdm' ? 'Weight' : 'Volume' }</label>
-            <input type="number" placeholder='Grams' value={printWeight || ''} onChange={(e) => setPrintWeight(e.target.value)} min={0}/>
+            <input type="number" placeholder={printerType === 'fdm' ? 'Grams' : 'Mililiters (ml)' } value={printWeight || ''} onChange={(e) => setPrintWeight(e.target.value)} min={0}/>
           </Form.Field>
           <Form.Field>
             <label>Time to print <b>(Hours)</b></label>
@@ -429,7 +429,7 @@ const Homepage = () => {
                       </Form.Field>
 
                       <Form.Field>
-                        <label>Labor Fee</label>
+                        <label>Labor Fee (pre and post processing)</label>
                         <input type="number" placeholder='Enter Amount' min={0} value={laborFee || ''} onChange={(e) => setLaborFee(e.target.value)}/>
                       </Form.Field>
 
