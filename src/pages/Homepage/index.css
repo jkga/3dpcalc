@@ -35,6 +35,14 @@
 .mainStepper::-webkit-scrollbar-track {
   background: rgb(235,235,235);
 }
+.ui.container.totalPrintCostSegmentContainer {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ui.segment.totalPrintCostSegment {
+  padding: 0;
+}
 
 @media (min-width: 481px) and (max-width: 767px) {
   
