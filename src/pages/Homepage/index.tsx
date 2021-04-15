@@ -5,26 +5,27 @@ import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
 
 const Homepage = () => {
-  const [filamentWeight, setFilamentWeight] : any = useState<number | string>(0);
-  const [filamentPrice, setFilamentPrice]: any = useState<number | string>(0);
-  const [filamentAmount, setFilamentAmount]: any = useState<number | string>(0);
-  const [printWeight, setPrintWeight] : any = useState<number | string>(0);
-  const [printTimeHours, setPrintTimeHours]: any = useState<number | string>(0);
-  const [printTimeMinutes, setPrintTimeMinutes]: any = useState<number | string>(0);
+  const [activeStep, setActiveStep] : any = useState <number>(0)
+  const [filamentWeight, setFilamentWeight] : any = useState <number >(0);
+  const [filamentPrice, setFilamentPrice]: any = useState <number | string>(0);
+  const [filamentAmount, setFilamentAmount]: any = useState <number | string>(0);
+  const [printWeight, setPrintWeight] : any = useState <number | string>(0);
+  const [printTimeHours, setPrintTimeHours]: any = useState <number | string>(0);
+  const [printTimeMinutes, setPrintTimeMinutes]: any = useState <number | string>(0);
 
-  const [powerMonthlyConsumption, setPowerMonthlyConsumption]: any = useState<number | string>(0);
-  const [powerMonthlyDue, setPowerMonthlyDue]: any = useState<number | string>(0);
-  const [powerConsumptionPerHour, setPowerConsumptionPerHour]: any = useState<number | string>(0);
+  const [powerMonthlyConsumption, setPowerMonthlyConsumption]: any = useState <number | string>(0);
+  const [powerMonthlyDue, setPowerMonthlyDue]: any = useState <number | string>(0);
+  const [powerConsumptionPerHour, setPowerConsumptionPerHour]: any = useState <number | string>(0);
 
-  const [printerPowerEnergyConsumption, setPrinterPowerEnergyConsumption]: any = useState<number | string>(0);
-  const [printerPowerConsumptionPerHour, setPrinterPowerConsumptionPerHour]: any = useState<number | string>(0);
+  const [printerPowerEnergyConsumption, setPrinterPowerEnergyConsumption]: any = useState <number | string>(0);
+  const [printerPowerConsumptionPerHour, setPrinterPowerConsumptionPerHour]: any = useState <number | string>(0);
 
-  const [printerRatedPower, setPrinterRatedPower]: any = useState<number | string>(0);
+  const [printerRatedPower, setPrinterRatedPower]: any = useState <number | string>(0);
 
-  const [totalPrintTime, setTotalPrintTime]: any = useState<number | string>(0);
-  const [totalPrintCostPerGram, setTotalPrintCostPerGram]: any = useState<number | string>(0);
-  const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState<number | string>(0);
-  const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState<number | string>(0);
+  const [totalPrintTime, setTotalPrintTime]: any = useState <number | string>(0);
+  const [totalPrintCostPerGram, setTotalPrintCostPerGram]: any = useState <number | string>(0);
+  const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState <number | string>(0);
+  const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState <number | string>(0);
 
 
   useEffect (() => {
@@ -99,7 +100,6 @@ const Homepage = () => {
           <Menu.Item>
             <Image as='a' href='/' src={Logo} width={100} className='logo'/>
           </Menu.Item>
-
           <Menu.Item>
             <Header as="h1">
               3D Print Calculator
@@ -116,35 +116,36 @@ const Homepage = () => {
       </Menu>
 
       <Step.Group ordered widths={4} size="mini">
-        <Step completed={filamentAmount} active>
+        <Step completed={filamentAmount} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
             <Step.Title>Filament</Step.Title>
             <Step.Description>Weigh your materials</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={totalPrintTime && printWeight}>
+        <Step completed={totalPrintTime && printWeight} active={activeStep === 1} onClick={() => setActiveStep(1)}>
           <Step.Content>
             <Step.Title>Print Output</Step.Title>
             <Step.Description>Measure your print time</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={totalPrintEnergyConsumption}>
+        <Step completed={totalPrintEnergyConsumption} active={activeStep === 2} onClick={() => setActiveStep(2)}>
           <Step.Content>
             <Step.Title>Power Consumption</Step.Title>
             <Step.Description>Estimate your power consumption</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={totalPrintCostPerGram || totalPrintCostPerHour}>
+        <Step completed={totalPrintCostPerGram && totalPrintCostPerHour} active={activeStep === 3} onClick={() => setActiveStep(3)}>
           <Step.Content>
             <Step.Title>Results</Step.Title>
           </Step.Content>
         </Step>
       </Step.Group>
 
-        <Form style={{paddingBottom: 100, paddingTop: 30}}>
+      <Container style={{display: activeStep === 0 ? 'block': 'none'}}>
+        <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Filament
             <Header.Subheader>Price and weight of filament used in your print</Header.Subheader>
@@ -161,9 +162,12 @@ const Homepage = () => {
             <label>Estimated Amount Per Gram <b>(PHP)</b></label>
             <input type="number" placeholder='Total Amount Per Gram' value={filamentAmount || ''}  readOnly disabled/>
           </Form.Field>
+        </Form>
+        <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
+      </Container>
 
-          <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
-
+      <Container style={{display: activeStep === 1 ? 'block': 'none'}}>
+        <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Print Output
             <Header.Subheader>Actual print weight and time</Header.Subheader>
@@ -171,7 +175,7 @@ const Homepage = () => {
 
           <Form.Field>
             <label>Weight</label>
-            <input type="number" placeholder='Grams' value={printWeight || ''} onChange={(e) => setPrintWeight(e.target.value)}/>
+            <input type="number" placeholder='Grams' value={printWeight || ''} onChange={(e) => setPrintWeight(e.target.value)} min={0}/>
           </Form.Field>
           <Form.Field>
             <label>Time to print <b>(Hours)</b></label>
@@ -188,9 +192,12 @@ const Homepage = () => {
             </Message>
           }
 
-          <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='plug' /></Divider>
+          <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='print' /></Divider>
+        </Form>
+      </Container>
 
-
+      <Container style={{display: activeStep === 2 ? 'block': 'none'}}>
+        <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Power Consumption
             <Header.Subheader>Compute electricity bill for your 3d print</Header.Subheader>
@@ -201,7 +208,7 @@ const Homepage = () => {
             <p>Please click the "Show Computation" text below for instructions</p>
           </Message>
 
-          <details>
+          <details style={{paddingBottom: 20, marginBottom: 30}}>
             <summary>Show Computation</summary><br/>
             <Message color='grey'>
               <p><Icon name='info circle'/> In your <b>most recent electricity bill</b>, please look for the <em>"Total kWh"</em> and <em>"Total Current Amount"</em> section.<br/>
@@ -237,25 +244,24 @@ const Homepage = () => {
                 }
               </Message>
             }
-
           </details>
-          <br/><br/>
-          
           <Form.Field>
             <label>Amount/hour <b>(PHP)</b></label>
             <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
           </Form.Field>
-
-          <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='money' /></Divider>
-
-          <Header as='h3' dividing>
-            Total Cost
-          </Header>
-            <p>Total Filament Cost: <Label>PHP {totalPrintCostPerGram || 0}</Label></p>
-            <p>Total Printing Hour Cost: <Label>PHP {totalPrintCostPerHour || 0}</Label></p>
-            <p>Total: <Label>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label></p>
         </Form>
-     
+
+        <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='plug' /></Divider>
+      </Container>
+
+      <Container style={{display: activeStep === 3 ? 'block': 'none'}}>
+        <Form style={{paddingTop: 30}}> 
+          <Header as='h3' dividing>Total Cost</Header>
+          <p>Filament Cost: <Label>PHP {totalPrintCostPerGram || 0}</Label></p>
+          <p>Printing Hour Cost: <Label>PHP {totalPrintCostPerHour || 0}</Label></p>
+          <p><b>Total: </b><Label>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label></p>
+        </Form>
+      </Container>
     </Container>
   );
 }
