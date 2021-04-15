@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox } from 'semantic-ui-react'
+import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox, Segment } from 'semantic-ui-react'
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
@@ -325,85 +325,97 @@ const Homepage = () => {
 
       <Container style={{display: activeStep === 3 ? 'block': 'none'}}>
       { /* Total Printing Cost*/}
-        <Form style={{paddingTop: 30}}> 
-          <Header as='h3' dividing>Total Printing Cost</Header>
-          <p>
-            <Label color='teal' style={{margin: 5}}>
-              <Icon name='cube'/> Material
-              <Label.Detail>PHP {totalPrintCostPerGram || 0}</Label.Detail>
-            </Label>
-          </p>
-          <p>
-            <Label color='teal' style={{margin: 5}}>
-              <Icon name='coffee'/> Printing Hour: 
-              <Label.Detail>PHP {totalPrintCostPerHour || 0}</Label.Detail>
-            </Label>
-          </p>
-          <p>
-            <Label color='teal' style={{margin: 5}}>
-              <Icon name='check circle'/> Total Cost
-              <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
-            </Label>
-          </p>
-        </Form>
-        
-        { /* Markup */}
-        <Form style={{paddingTop: 30}}> 
-          <Header as='h3' dividing>Markup</Header>
-          <Form.Field>
-            <label>Percentage %</label>
-            <input type="number" placeholder='Energy Consumption per kWh' min={0} value={markup || ''} onChange={(e) => setMarkup(e.target.value)}/>
-            { (totalMarkup || '') && <p style={{margin: 5}}><Label color='teal'>
-                  <Icon name='plus'/> Markup
-                  <Label.Detail>PHP {totalMarkup}</Label.Detail>
-                </Label>
-              </p>
-            }
-          </Form.Field>
-          
-          { /* Other Charging Options */}
-          <p><Checkbox label='Show other charging options' onChange={(_e, data) => setShowOtherChargingOptions(data.checked)} /></p>
-          { (showOtherChargingOptions || '') &&
-            <Container>
-              <Form.Field>
-                <label>Setup Fee (initial setup)</label>
-                <input type="number" placeholder='Enter Amount' min={0} value={setupFee || ''} onChange={(e) => setSetupFee(e.target.value)}/>
-              </Form.Field>
+        <Segment style={{border: 'none', boxShadow: 'none', padding: 0}}>
+          <Grid columns={2} stackable>
+            <Divider vertical></Divider>
+            <Grid.Row verticalAlign='middle'>
+              <Grid.Column>
+                <Form style={{paddingTop: 30}}> 
+                  <Header as='h3' dividing>Total Printing Cost</Header>
+                  <p>
+                    <Label color='teal' style={{margin: 5}}>
+                      <Icon name='cube'/> Material
+                      <Label.Detail>PHP {totalPrintCostPerGram || 0}</Label.Detail>
+                    </Label>
+                  </p>
+                  <p>
+                    <Label color='teal' style={{margin: 5}}>
+                      <Icon name='coffee'/> Printing Hour: 
+                      <Label.Detail>PHP {totalPrintCostPerHour || 0}</Label.Detail>
+                    </Label>
+                  </p>
+                  <p>
+                    <Label color='teal' style={{margin: 5}}>
+                      <Icon name='check circle'/> Total Cost
+                      <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
+                    </Label>
+                  </p>
+                </Form>
+              </Grid.Column>
 
-              <Form.Field>
-                <label>Packaging</label>
-                <input type="number" placeholder='Enter Amount' min={0} value={packagingFee || ''} onChange={(e) => setPackagingFee(e.target.value)}/>
-              </Form.Field>
+              <Grid.Column>
+                { /* Markup */}
+                <Form style={{paddingTop: 20}}>
+                  <Header as='h3' dividing>Markup</Header>
+                  <label>Percentage %</label>
+                  <input type="number" placeholder='Energy Consumption per kWh' min={0} value={markup || ''} onChange={(e) => setMarkup(e.target.value)}/>
+                  { (totalMarkup || '') && <p style={{margin: 5}}><Label color='teal'>
+                        <Icon name='plus'/> Markup
+                        <Label.Detail>PHP {totalMarkup}</Label.Detail>
+                      </Label>
+                    </p>
+                  }
+                </Form>
 
-              <Form.Field>
-                <label>Delivery Fee</label>
-                <input type="number" placeholder='Enter Amount' min={0} value={deliveryFee || ''} onChange={(e) => setDeliveryFee(e.target.value)}/>
-              </Form.Field>
+                { /* Other Charging Options */}
+                <Form style={{paddingTop: 30}}> 
+                  <p><Checkbox label='Show other charging options' onChange={(_e, data) => setShowOtherChargingOptions(data.checked)} /></p>
+                  { (showOtherChargingOptions || '') &&
+                    <Container>
+                      <Form.Field>
+                        <label>Setup Fee (initial setup)</label>
+                        <input type="number" placeholder='Enter Amount' min={0} value={setupFee || ''} onChange={(e) => setSetupFee(e.target.value)}/>
+                      </Form.Field>
 
-              <Form.Field>
-                <label>Others (glue, pei sheet, etc...)</label>
-                <input type="number" placeholder='Enter Amount' min={0} value={otherFee|| ''} onChange={(e) => setOtherFee(e.target.value)}/>
-              </Form.Field>
-            </Container>
-          }
-        </Form>
+                      <Form.Field>
+                        <label>Packaging</label>
+                        <input type="number" placeholder='Enter Amount' min={0} value={packagingFee || ''} onChange={(e) => setPackagingFee(e.target.value)}/>
+                      </Form.Field>
+
+                      <Form.Field>
+                        <label>Delivery Fee</label>
+                        <input type="number" placeholder='Enter Amount' min={0} value={deliveryFee || ''} onChange={(e) => setDeliveryFee(e.target.value)}/>
+                      </Form.Field>
+
+                      <Form.Field>
+                        <label>Others (glue, pei sheet, etc...)</label>
+                        <input type="number" placeholder='Enter Amount' min={0} value={otherFee|| ''} onChange={(e) => setOtherFee(e.target.value)}/>
+                      </Form.Field>
+                    </Container>
+                  }
+                </Form>
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Segment>
 
         { /* Final Price */}
-        <Container style={{marginTop: 50, paddingBottom: 100}}>
-          <Header as='h3' dividing>Final Price</Header>
-          <p>
-            <Label color='green' style={{margin: 5}}>
-              <Icon name='check circle'/> Total
-              <Label.Detail>PHP {totalCostWithMarkup}</Label.Detail>
-            </Label>
-            <Label color='yellow' style={{margin: 5}}>
-              <Icon name='check circle'/> Profit (markup + other charges)
-              <Label.Detail>PHP {profit}</Label.Detail>
-            </Label>
-          </p>
-        </Container>
-
-        <Paginator backStep={2}/>
+        <Segment raised style={{marginTop: 50, marginBottom: 100}}>
+          <Form>
+            <Header as='h3' dividing>Final Price</Header>
+            <p>
+              <Label color='green' style={{margin: 5}}>
+                <Icon name='check circle'/> Total
+                <Label.Detail>PHP {totalCostWithMarkup}</Label.Detail>
+              </Label>
+              <Label color='yellow' style={{margin: 5}}>
+                <Icon name='check circle'/> Profit (markup + other charges)
+                <Label.Detail>PHP {profit}</Label.Detail>
+              </Label>
+            </p>
+          </Form>
+          <Paginator backStep={2}/>
+          </Segment>
       </Container>
     </Container>
   );
