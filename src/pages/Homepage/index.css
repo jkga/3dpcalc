@@ -1,0 +1,53 @@
+.logo > img {
+  width: 120px;
+}
+
+.hidden-xs {
+  display: block;
+}
+
+.float-right {
+  float: right;
+}
+
+.float-left {
+  float: left;
+}
+
+.visible-xs {
+  display: none;
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  
+}
+
+@media (min-width: 321px) and (max-width: 479px){
+  .ui.secondary.menu div > .logo-section {
+    width: 40px;
+    padding: 0px;
+  }
+
+  .visible-sm {
+    display: block !important;
+  }
+}
+
+/* 
+  ##Device = Most of the Smartphones Mobiles (Portrait)
+  ##Screen = B/w 320px to 479px
+*/
+
+@media (max-width: 320px) {
+  
+  .hidden-xs {
+    display: none !important;
+  }
+
+  .visible-xs {
+    display: block !important;
+  }
+  
+}
+
+

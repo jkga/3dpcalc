@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label } from 'semantic-ui-react'
+import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button } from 'semantic-ui-react'
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
+import './index.css'
 
 const Homepage = () => {
   const [activeStep, setActiveStep] : any = useState <number>(0)
@@ -93,18 +94,34 @@ const Homepage = () => {
 
   }, [powerMonthlyConsumption, powerMonthlyDue])
 
+  const Paginator = (opt:any = {}) => {
+    return(
+      <Grid style={{marginTop: 20, display: 'none'}} className="visible-xs visible-sm">
+        <Grid.Row>
+          <Grid.Column width={3} style={{marginTop: 10}}>
+            { (typeof opt.backStep !== 'undefined' || '') && <Button size="small" className="float-left" onClick={() => setActiveStep(opt.backStep)}>Back</Button> }
+          </Grid.Column>
+          <Grid.Column width={10}></Grid.Column>
+          <Grid.Column width={3} style={{marginTop: 10}}>
+            { (opt.nextStep || '') && <Button size="small" className="float-right" onClick={() => setActiveStep(opt.nextStep)} secondary>Next</Button> }
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+    );
+  }
+
   return (
     <Container text>
       <Menu secondary style={{padding: '20px'}}>
         <Menu.Menu position='left'>
-          <Menu.Item>
-            <Image as='a' href='/' src={Logo} width={100} className='logo'/>
+          <Menu.Item className='hidden-xs logo-section'>
+            <Image as='a' href='/' src={Logo} className="logo"/>
           </Menu.Item>
           <Menu.Item>
             <Header as="h1">
               <Header.Content style={{color: '#ff6c00'}}>3D Print Calculator</Header.Content>
-              <Header.Subheader>Calculate your 3d printing cost</Header.Subheader>
-              <Header.Subheader>
+              <Header.Subheader className="subHeader">Calculate your 3d printing cost</Header.Subheader>
+              <Header.Subheader className="subHeader">
                 <small>
                   <Icon name='github'/>
                   <a href="https://github.com/jkga/3dpcalc">https://github.com/jkga/3dpcalc</a>
@@ -115,29 +132,29 @@ const Homepage = () => {
         </Menu.Menu>
       </Menu>
 
-      <Step.Group ordered fluid size="mini">
-        <Step completed={filamentAmount} active={activeStep === 0} onClick={() => setActiveStep(0)}>
+      <Step.Group ordered fluid size="mini" className="hidden-xs">
+        <Step completed={Boolean(filamentAmount)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
             <Step.Title>Filament</Step.Title>
             <Step.Description>Weigh your materials</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={totalPrintTime && printWeight} active={activeStep === 1} onClick={() => setActiveStep(1)}>
+        <Step completed={Boolean(totalPrintTime) && Boolean(printWeight)} active={activeStep === 1} onClick={() => setActiveStep(1)}>
           <Step.Content>
             <Step.Title>Print Output</Step.Title>
             <Step.Description>Measure your print time</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={totalPrintEnergyConsumption} active={activeStep === 2} onClick={() => setActiveStep(2)}>
+        <Step completed={Boolean(totalPrintEnergyConsumption)} active={activeStep === 2} onClick={() => setActiveStep(2)}>
           <Step.Content>
             <Step.Title>Power Consumption</Step.Title>
             <Step.Description>Estimate your power consumption</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={totalPrintCostPerGram && totalPrintCostPerHour} active={activeStep === 3} onClick={() => setActiveStep(3)}>
+        <Step completed={Boolean(totalPrintCostPerGram) && Boolean(totalPrintCostPerHour)} active={activeStep === 3} onClick={() => setActiveStep(3)}>
           <Step.Content>
             <Step.Title>Results</Step.Title>
           </Step.Content>
@@ -163,6 +180,8 @@ const Homepage = () => {
             <input type="number" placeholder='Total Amount Per Gram' value={filamentAmount || ''}  readOnly disabled/>
           </Form.Field>
         </Form>
+
+        <Paginator nextStep={1}/>
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
       </Container>
 
@@ -191,7 +210,7 @@ const Homepage = () => {
               <p><Icon name='info' />You have a total print time of <b>{totalPrintTime}</b> minute(s)</p>
             </Message>
           }
-
+          <Paginator nextStep={2} backStep={0}/>
           <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='print' /></Divider>
         </Form>
       </Container>
@@ -250,17 +269,33 @@ const Homepage = () => {
             <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
           </Form.Field>
         </Form>
-
+        <Paginator nextStep={3} backStep={1}/>
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='plug' /></Divider>
       </Container>
 
       <Container style={{display: activeStep === 3 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}> 
           <Header as='h3' dividing>Total Cost</Header>
-          <p>Filament Cost: <Label>PHP {totalPrintCostPerGram || 0}</Label></p>
-          <p>Printing Hour Cost: <Label>PHP {totalPrintCostPerHour || 0}</Label></p>
-          <p><b>Total: </b><Label>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label></p>
+          <p>
+            <Label color='teal'>
+              <Icon name='cube'/> PHP 
+              <Label.Detail>{totalPrintCostPerGram || 0}</Label.Detail>
+            </Label>
+          </p>
+          <p>
+            <Label color='teal'>
+              <Icon name='coffee'/> Printing Hour Cost: 
+              <Label.Detail>PHP {totalPrintCostPerHour || 0}</Label.Detail>
+            </Label>
+          </p>
+          <p>
+            <Label color='teal'>
+              <Icon name='check circle'/> Total
+              <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
+            </Label>
+          </p>
         </Form>
+        <Paginator backStep={2}/>
       </Container>
     </Container>
   );
