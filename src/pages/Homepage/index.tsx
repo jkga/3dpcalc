@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label } from 'semantic-ui-react'
-import Logo from '../../logo.svg'
+import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
 
@@ -12,7 +12,7 @@ const Homepage = () => {
   const [printWeight, setPrintWeight] : any = useState <number | string>(0);
   const [printTimeHours, setPrintTimeHours]: any = useState <number | string>(0);
   const [printTimeMinutes, setPrintTimeMinutes]: any = useState <number | string>(0);
-
+  
   const [powerMonthlyConsumption, setPowerMonthlyConsumption]: any = useState <number | string>(0);
   const [powerMonthlyDue, setPowerMonthlyDue]: any = useState <number | string>(0);
   const [powerConsumptionPerHour, setPowerConsumptionPerHour]: any = useState <number | string>(0);
@@ -102,7 +102,7 @@ const Homepage = () => {
           </Menu.Item>
           <Menu.Item>
             <Header as="h1">
-              3D Print Calculator
+              <Header.Content style={{color: '#ff6c00'}}>3D Print Calculator</Header.Content>
               <Header.Subheader>Calculate your 3d printing cost</Header.Subheader>
               <Header.Subheader>
                 <small>
@@ -115,7 +115,7 @@ const Homepage = () => {
         </Menu.Menu>
       </Menu>
 
-      <Step.Group ordered widths={4} size="mini">
+      <Step.Group ordered fluid size="mini">
         <Step completed={filamentAmount} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
             <Step.Title>Filament</Step.Title>
