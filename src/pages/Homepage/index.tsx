@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox, Segment } from 'semantic-ui-react'
+import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox, Segment, Radio } from 'semantic-ui-react'
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
@@ -14,6 +14,9 @@ const Homepage = () => {
   const [printWeight, setPrintWeight] : any = useState <number | string>(0);
   const [printTimeHours, setPrintTimeHours]: any = useState <number | string>(0);
   const [printTimeMinutes, setPrintTimeMinutes]: any = useState <number | string>(0);
+
+  // printer settings
+  const [printerType, setPrinterType] : any = useState <string>('fdm')
   
   // power consumption from recent bill
   const [powerMonthlyConsumption, setPowerMonthlyConsumption]: any = useState <number | string>(0);
@@ -35,6 +38,7 @@ const Homepage = () => {
   const [setupFee, setSetupFee] : any = useState <number>(0)
   const [packagingFee, setPackagingFee] : any = useState <number>(0)
   const [deliveryFee, setDeliveryFee] : any = useState <number>(0)
+  const [laborFee, setLaborFee] : any = useState <number>(0)
   const [otherFee, setOtherFee] : any = useState <number>(0)
   
   // computed total amount
@@ -102,7 +106,6 @@ const Homepage = () => {
 
   useEffect (() => {
     // convert hours to minutes
-    //setTotalPrintTime(parseFloat(printTimeMinutes || 0) + (parseFloat(printTimeHours || 0) * 60))
     let energyConsumption = parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)
     let kWh = parseFloat(powerMonthlyConsumption || 0) / (24 * 30)
 
@@ -120,11 +123,11 @@ const Homepage = () => {
     let __totalPrice: number = parseFloat(totalPrintCostPerGram || 0) + parseFloat(totalPrintCostPerHour || 0)
     let __markup: number = __totalPrice * (parseFloat(markup) / 100)
     let __total: number = __totalPrice + __markup
-    let __totalOtherChargingOptions = parseFloat(setupFee || 0) + parseFloat(deliveryFee || 0) + parseFloat(packagingFee || 0) +  parseFloat(otherFee || 0)
+    let __totalOtherChargingOptions = parseFloat(setupFee || 0) + parseFloat(deliveryFee || 0) + parseFloat(packagingFee || 0) +  parseFloat(laborFee || 0) +  parseFloat(otherFee || 0)
     setTotalMarkup(__markup)
     setProfit (__markup + __totalOtherChargingOptions)
     setTotalCostWithMarkup (__total + __totalOtherChargingOptions)
-  }, [totalPrintCostPerHour, totalPrintCostPerGram, markup, setupFee, deliveryFee, packagingFee, otherFee, showOtherChargingOptions])
+  }, [totalPrintCostPerHour, totalPrintCostPerGram, markup, setupFee, deliveryFee, packagingFee, otherFee, laborFee, showOtherChargingOptions])
 
   /**
    * Clear value of other charging options
@@ -179,7 +182,7 @@ const Homepage = () => {
       <Step.Group ordered unstackable size="mini" className="hidden-xs mainStepper">
         <Step completed={Boolean(filamentAmount)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
-            <Step.Title>Filament</Step.Title>
+            <Step.Title>Materials</Step.Title>
             <Step.Description>Weigh your materials</Step.Description>
           </Step.Content>
         </Step>
@@ -208,24 +211,72 @@ const Homepage = () => {
       { /* Filament */}
       <Container style={{display: activeStep === 0 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
+          {/* Printer Settings */}
           <Header as='h3' dividing>
-            Filament
-            <Header.Subheader>Price and weight of filament used in your print</Header.Subheader>
+            Printer
+            <Header.Subheader>Select printer type</Header.Subheader>
           </Header>
-          <Form.Field>
-            <label>Weight (kg)</label>
-            <input type="number" placeholder='Kilogram' min={0} value={filamentWeight || ''} onChange={(e) => setFilamentWeight(e.target.value)}/>
-          </Form.Field>
-          <Form.Field>
-            <label>Price <b>(PHP)</b></label>
-            <input type="number" placeholder='Enter Amount' min={0} value={filamentPrice || ''} onChange={(e) => setFilamentPrice(e.target.value)}/>
-          </Form.Field>
-          <Form.Field>
-            <label>Estimated Amount Per Gram <b>(PHP)</b></label>
-            <input type="number" placeholder='Total Amount Per Gram' value={filamentAmount || ''}  readOnly disabled/>
-          </Form.Field>
-        </Form>
 
+          <Grid columns='equal'>
+            <Grid.Column width={4}>
+              <Form.Field>
+                <Radio label='FDM' name='printerType' value='fdm'  onChange={(_e, data) => setPrinterType(data.value)} defaultChecked checked={printerType === 'fdm'}/>
+              </Form.Field>
+            </Grid.Column>
+
+            <Grid.Column width={8}>
+              <Form.Field>
+                <Radio label='SLA' name='printerType' value='sla' onChange={(_e, data) => setPrinterType(data.value)} checked={printerType === 'sla'}/>
+              </Form.Field>
+            </Grid.Column>
+          </Grid>
+        
+
+          {/* Filament */}
+          { (printerType === 'fdm' || '') &&
+            <>
+              <Header as='h3' dividing>
+                Filament
+                <Header.Subheader>Price and weight of filament used in your model</Header.Subheader>
+              </Header>
+              <Form.Field>
+                <label>Weight (kg)</label>
+                <input type="number" placeholder='Kilogram' min={0} value={filamentWeight || ''} onChange={(e) => setFilamentWeight(e.target.value)}/>
+              </Form.Field>
+              <Form.Field>
+                <label>Price <b>(PHP)</b></label>
+                <input type="number" placeholder='Enter Amount' min={0} value={filamentPrice || ''} onChange={(e) => setFilamentPrice(e.target.value)}/>
+              </Form.Field>
+              <Form.Field>
+                <label>Estimated Amount Per Gram <b>(PHP)</b></label>
+                <input type="number" placeholder='Total Amount Per Gram' value={filamentAmount || ''}  readOnly disabled/>
+              </Form.Field>
+            </>
+          }
+
+          {/* Resin */}
+          { (printerType === 'sla' || '') &&
+            <>
+              <Header as='h3' dividing>
+                Resin
+                <Header.Subheader>Price and weight of resin used in your model</Header.Subheader>
+              </Header>
+              <Form.Field>
+                <label>Volume (L)</label>
+                <input type="number" placeholder='Liter' min={0} value={filamentWeight || ''} onChange={(e) => setFilamentWeight(e.target.value)}/>
+              </Form.Field>
+              <Form.Field>
+                <label>Price <b>(PHP)</b></label>
+                <input type="number" placeholder='Enter Amount' min={0} value={filamentPrice || ''} onChange={(e) => setFilamentPrice(e.target.value)}/>
+              </Form.Field>
+              <Form.Field>
+                <label>Estimated Amount Per Mililiter(ml) <b>(PHP)</b></label>
+                <input type="number" placeholder='Total Amount Per Mililiter(ml)' value={filamentAmount || ''}  readOnly disabled/>
+              </Form.Field>
+            </>
+          }
+
+        </Form>
         <Paginator nextStep={1}/>
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
       </Container>
@@ -235,11 +286,11 @@ const Homepage = () => {
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Print Output
-            <Header.Subheader>Actual print weight and time</Header.Subheader>
+            <Header.Subheader>Actual print {printerType === 'fdm' ? 'Weight' : 'volume' }and time</Header.Subheader>
           </Header>
 
           <Form.Field>
-            <label>Weight</label>
+            <label>{ printerType === 'fdm' ? 'Weight' : 'Volume' }</label>
             <input type="number" placeholder='Grams' value={printWeight || ''} onChange={(e) => setPrintWeight(e.target.value)} min={0}/>
           </Form.Field>
           <Form.Field>
@@ -323,9 +374,9 @@ const Homepage = () => {
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='plug' /></Divider>
       </Container>
 
-      <Container style={{display: activeStep === 3 ? 'block': 'none'}}>
+      <Container style={{display: activeStep === 3 ? 'block': 'none'}} className='totalPrintCostSegmentContainer'>
       { /* Total Printing Cost*/}
-        <Segment style={{border: 'none', boxShadow: 'none', padding: 0}}>
+        <Segment style={{border: 'none', boxShadow: 'none'}} className="totalPrintCostSegment">
           <Grid columns={2} stackable>
             <Divider vertical></Divider>
             <Grid.Row verticalAlign='middle'>
@@ -378,6 +429,11 @@ const Homepage = () => {
                       </Form.Field>
 
                       <Form.Field>
+                        <label>Labor Fee</label>
+                        <input type="number" placeholder='Enter Amount' min={0} value={laborFee || ''} onChange={(e) => setLaborFee(e.target.value)}/>
+                      </Form.Field>
+
+                      <Form.Field>
                         <label>Packaging</label>
                         <input type="number" placeholder='Enter Amount' min={0} value={packagingFee || ''} onChange={(e) => setPackagingFee(e.target.value)}/>
                       </Form.Field>
@@ -404,6 +460,10 @@ const Homepage = () => {
           <Form>
             <Header as='h3' dividing>Final Price</Header>
             <p>
+              <Label color='teal' style={{margin: 5}}>
+                <Icon name='check circle'/> Model Cost
+                <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
+              </Label><br/>
               <Label color='green' style={{margin: 5}}>
                 <Icon name='check circle'/> Total
                 <Label.Detail>PHP {totalCostWithMarkup}</Label.Detail>
@@ -415,7 +475,7 @@ const Homepage = () => {
             </p>
           </Form>
           <Paginator backStep={2}/>
-          </Segment>
+        </Segment>
       </Container>
     </Container>
   );

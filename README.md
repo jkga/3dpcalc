@@ -14,7 +14,7 @@ Features:
 - [x] Estimated Price/hour of power consumption based on the device power rating
 - [ ] 3d printer's profile evaluation
 - [ ] Preset for know 3d printers
-- [ ] Support for resin printers
+- [x] Support for SLA printers
 - [x] Optional additional costs (setup fee, packaging, delivery, etc...)
 - [x] Markup computation
 - [ ] PDF Export
