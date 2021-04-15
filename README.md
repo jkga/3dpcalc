@@ -15,6 +15,6 @@ Features:
 - [ ] 3d printer's profile evaluation
 - [ ] Preset for know 3d printers
 - [ ] Support for resin printers
-- [ ] Optional additional costs (setup fee, packaging, delivery, etc...)
-- [ ] Markup computation
+- [x] Optional additional costs (setup fee, packaging, delivery, etc...)
+- [x] Markup computation
 - [ ] PDF Export
