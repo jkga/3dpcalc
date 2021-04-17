@@ -6,6 +6,13 @@ import watts from './assets/img/watts.png'
 import './index.css'
 
 const Homepage = () => {
+  const currencyConfig = {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: 2,
+    currencyDisplay: "symbol",
+  };
+
   const [activeStep, setActiveStep] : any = useState <number>(0)
   const [showOtherChargingOptions, setShowOtherChargingOptions] : any = useState <boolean>(false)
   const [filamentWeight, setFilamentWeight] : any = useState <number >(0);
@@ -47,6 +54,7 @@ const Homepage = () => {
   const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState <number | string>(0);
   const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState <number | string>(0);
   
+
   /**
    * Filament / Material
    */
@@ -91,9 +99,22 @@ const Homepage = () => {
     // 8.759468599033816 + 0.547466787439614 = 9.30693538647343
     let newPrinterEnergyConsumption = parseFloat(exessEnergyConsumption) + parseFloat(energyConsumption)
 
+    // stop computation for empty printer's wattage
+    if(!printerRatedPower) {
+       // convert hours to minutes
+       let energyConsumption: number = parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)
+       let kWh: number = parseFloat(powerMonthlyConsumption || 0) / (24 * 30)
+       let energyConsumptionPerKwh: number = energyConsumption * kWh
+   
+       // derive kWh from monthly power consumption (30 days only)
+       setPowerConsumptionPerHour (kWh) 
+       setTotalPrintEnergyConsumption(energyConsumptionPerKwh.toFixed(2))
+      return
+    }
+
     // update total energy consumption
     // 9.30693538647343 * 0.35 = 3.2574273852657005
-    setTotalPrintEnergyConsumption (newPrinterEnergyConsumption * printerRatedKwh)
+    setTotalPrintEnergyConsumption ((newPrinterEnergyConsumption * printerRatedKwh).toFixed(2))
     setPrinterPowerEnergyConsumption (newPrinterEnergyConsumption)
     setPrinterPowerConsumptionPerHour (printerRatedKwh)
   }, [printerRatedPower, powerConsumptionPerHour, powerMonthlyConsumption, powerMonthlyDue])
@@ -105,15 +126,14 @@ const Homepage = () => {
   }, [totalPrintTime,totalPrintEnergyConsumption])
 
   useEffect (() => {
-    // convert hours to minutes
-    let energyConsumption = parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)
-    let kWh = parseFloat(powerMonthlyConsumption || 0) / (24 * 30)
-
-    // derive kWh from monthly power consumption (30 days only)
-    setPowerConsumptionPerHour (kWh)
-
-    setTotalPrintEnergyConsumption(energyConsumption * kWh)
-
+     // convert hours to minutes
+     let energyConsumption: number = parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)
+     let kWh: number = parseFloat(powerMonthlyConsumption || 0) / (24 * 30)
+     let energyConsumptionPerKwh: number = energyConsumption * kWh
+ 
+     // derive kWh from monthly power consumption (30 days only)
+     setPowerConsumptionPerHour (kWh) 
+     setTotalPrintEnergyConsumption(energyConsumptionPerKwh.toFixed(2))
   }, [powerMonthlyConsumption, powerMonthlyDue])
 
   /**
@@ -121,7 +141,7 @@ const Homepage = () => {
    */
   useEffect(() => {
     let __totalPrice: number = parseFloat(totalPrintCostPerGram || 0) + parseFloat(totalPrintCostPerHour || 0)
-    let __markup: number = __totalPrice * (parseFloat(markup) / 100)
+    let __markup: number = __totalPrice * (parseFloat(markup || 0) / 100)
     let __total: number = __totalPrice + __markup
     let __totalOtherChargingOptions = parseFloat(setupFee || 0) + parseFloat(deliveryFee || 0) + parseFloat(packagingFee || 0) +  parseFloat(laborFee || 0) +  parseFloat(otherFee || 0)
     setTotalMarkup(__markup)
@@ -249,7 +269,7 @@ const Homepage = () => {
               </Form.Field>
               <Form.Field>
                 <label>Estimated Amount Per Gram <b>(PHP)</b></label>
-                <input type="number" placeholder='Total Amount Per Gram' value={filamentAmount || ''}  readOnly disabled/>
+                <input type="text" placeholder='Total Amount Per Gram' value={!isNaN(filamentAmount.toFixed(2)) ? new Intl.NumberFormat('en', currencyConfig).format(filamentAmount.toFixed(2)): ''}  readOnly disabled/>
               </Form.Field>
             </>
           }
@@ -271,7 +291,7 @@ const Homepage = () => {
               </Form.Field>
               <Form.Field>
                 <label>Estimated Amount Per Mililiter(ml) <b>(PHP)</b></label>
-                <input type="number" placeholder='Total Amount Per Mililiter(ml)' value={filamentAmount || ''}  readOnly disabled/>
+                <input type="text" placeholder='Total Amount Per Mililiter(ml)' value={!isNaN(filamentAmount.toFixed(2)) ? new Intl.NumberFormat('en', currencyConfig).format(filamentAmount.toFixed(2)): ''}  readOnly disabled/>
               </Form.Field>
             </>
           }
@@ -286,7 +306,7 @@ const Homepage = () => {
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Print Output
-            <Header.Subheader>Actual print {printerType === 'fdm' ? 'Weight' : 'volume' }and time</Header.Subheader>
+            <Header.Subheader>Actual print {printerType === 'fdm' ? 'Weight' : 'volume' } and time</Header.Subheader>
           </Header>
 
           <Form.Field>
@@ -348,8 +368,8 @@ const Homepage = () => {
 
             { /* Power Consumption Results */}
             { ((powerMonthlyConsumption && powerMonthlyDue) || '') && <Message size='tiny' color='green'>
-                <p><Icon name='info' />You have a total energy consumption of PHP <u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
-                <em> <Label>hourly</Label> rate of <Label>PHP{((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0) }</Label></em> equivalent to <u>{powerConsumptionPerHour}kWh</u>
+                <p><Icon name='info' />You have a total energy consumption of PHP <u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)).toFixed(2) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
+                <em> <Label>hourly</Label> rate of <Label>PHP{(((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0)).toFixed(2) }</Label></em> equivalent to <u>{powerConsumptionPerHour.toFixed(2)}kWh</u>
                 </p><br/>
                 <p>Please enter your power supply's wattage to get more acurate results</p>
                 <Image as='div' src={watts} width={'100%'} className='bill'/>
@@ -358,15 +378,15 @@ const Homepage = () => {
                   <input type="number" placeholder='Watts' min={0} style={{width: '90%'}} value={printerRatedPower || ''} onChange={(e) => setPrinterRatedPower(e.target.value)}/>
                 </Form.Field>
                 { ((printerPowerEnergyConsumption && printerRatedPower) || '') && 
-                  <p style={{color: 'red'}}>New total energy consumption: PHP<u>{printerPowerEnergyConsumption}</u>/kWh <br/>
-                  Estimated hourly consumption: <u>{printerPowerConsumptionPerHour}kW</u></p>
+                  <p style={{color: 'red'}}>New total energy consumption: PHP<u>{printerPowerEnergyConsumption.toFixed(2)}</u>/kWh <br/>
+                  Estimated hourly consumption: <u>{printerPowerConsumptionPerHour.toFixed(2)}kW</u></p>
                 }
               </Message>
             }
           </details>
 
           <Form.Field>
-            <label>Amount/hour <b>(PHP)</b></label>
+            <label>Estimated Amount/hour <b>(PHP)</b></label>
             <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
           </Form.Field>
         </Form>
@@ -386,19 +406,19 @@ const Homepage = () => {
                   <p>
                     <Label color='teal' style={{margin: 5}}>
                       <Icon name='cube'/> Material
-                      <Label.Detail>PHP {totalPrintCostPerGram || 0}</Label.Detail>
+                      <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format((totalPrintCostPerGram || 0).toFixed(2))}</Label.Detail>
                     </Label>
                   </p>
                   <p>
                     <Label color='teal' style={{margin: 5}}>
                       <Icon name='coffee'/> Printing Hour: 
-                      <Label.Detail>PHP {totalPrintCostPerHour || 0}</Label.Detail>
+                      <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format((totalPrintCostPerHour || 0).toFixed(2))}</Label.Detail>
                     </Label>
                   </p>
                   <p>
                     <Label color='teal' style={{margin: 5}}>
                       <Icon name='check circle'/> Total Cost
-                      <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
+                      <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0)).toFixed(2))}</Label.Detail>
                     </Label>
                   </p>
                 </Form>
@@ -412,7 +432,7 @@ const Homepage = () => {
                   <input type="number" placeholder='Energy Consumption per kWh' min={0} value={markup || ''} onChange={(e) => setMarkup(e.target.value)}/>
                   { (totalMarkup || '') && <p style={{margin: 5}}><Label color='teal'>
                         <Icon name='plus'/> Markup
-                        <Label.Detail>PHP {totalMarkup}</Label.Detail>
+                        <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(totalMarkup.toFixed(2))}</Label.Detail>
                       </Label>
                     </p>
                   }
@@ -462,15 +482,15 @@ const Homepage = () => {
             <p>
               <Label color='teal' style={{margin: 5}}>
                 <Icon name='check circle'/> Model Cost
-                <Label.Detail>PHP {((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0))}</Label.Detail>
-              </Label><br/>
-              <Label color='green' style={{margin: 5}}>
-                <Icon name='check circle'/> Total
-                <Label.Detail>PHP {totalCostWithMarkup}</Label.Detail>
+                <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0)).toFixed(2))}</Label.Detail>
               </Label>
               <Label color='yellow' style={{margin: 5}}>
                 <Icon name='check circle'/> Profit (markup + other charges)
-                <Label.Detail>PHP {profit}</Label.Detail>
+                <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(profit.toFixed(2))}</Label.Detail>
+              </Label><br/>
+              <Label color='green' style={{margin: 5}}>
+                <Icon name='check circle'/> Total
+                <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(totalCostWithMarkup.toFixed(2))}</Label.Detail>
               </Label>
             </p>
           </Form>
