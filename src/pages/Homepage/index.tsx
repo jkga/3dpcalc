@@ -108,7 +108,7 @@ const Homepage = () => {
    
        // derive kWh from monthly power consumption (30 days only)
        setPowerConsumptionPerHour (kWh) 
-       setTotalPrintEnergyConsumption(energyConsumptionPerKwh.toFixed(2))
+       setTotalPrintEnergyConsumption(!isNaN(energyConsumption) ? energyConsumptionPerKwh.toFixed(2) : 0)
       return
     }
 
@@ -122,7 +122,7 @@ const Homepage = () => {
   useEffect (() => {
     // convert minutes to hour
     let totalPrintHours: number = parseFloat(totalPrintTime) / 60
-    setTotalPrintCostPerHour(totalPrintEnergyConsumption * totalPrintHours)
+    setTotalPrintCostPerHour(!isNaN(totalPrintEnergyConsumption) ? totalPrintEnergyConsumption * totalPrintHours : 0)
   }, [totalPrintTime,totalPrintEnergyConsumption])
 
   useEffect (() => {
@@ -133,7 +133,7 @@ const Homepage = () => {
  
      // derive kWh from monthly power consumption (30 days only)
      setPowerConsumptionPerHour (kWh) 
-     setTotalPrintEnergyConsumption(energyConsumptionPerKwh.toFixed(2))
+     setTotalPrintEnergyConsumption(!isNaN(energyConsumption) ? energyConsumptionPerKwh.toFixed(2) : 0)
   }, [powerMonthlyConsumption, powerMonthlyDue])
 
   /**
