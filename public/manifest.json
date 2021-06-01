@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "3dpcalc",
+  "name": "3dpcalc - 3d printing cost calculator",
   "icons": [
     {
       "src": "favicon.ico",
