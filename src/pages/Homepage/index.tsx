@@ -187,7 +187,7 @@ const Homepage = () => {
           </Menu.Item>
           <Menu.Item>
             <Header as="h1">
-              <Header.Content style={{color: '#ff6c00'}}>3D Print Calculator</Header.Content>
+              <Header.Content>3D Print Calculator</Header.Content>
               <Header.Subheader className="subHeader">Calculate your 3d printing cost</Header.Subheader>
               <Header.Subheader className="subHeader">
                 <small>
