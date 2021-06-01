@@ -3,6 +3,8 @@ import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Lab
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
+import ender3v2 from './assets/img/ender3v2.png'
+import anycubic from './assets/img/anycubic.png'
 import './index.css'
 
 const Homepage = () => {
@@ -161,7 +163,7 @@ const Homepage = () => {
 
   const Paginator = (opt:any = {}) => {
     return(
-      <Grid style={{marginTop: 20, display: 'none'}} className="visible-xs visible-sm">
+      <Grid style={{marginTop: 20}}>
         <Grid.Row>
           <Grid.Column width={3} style={{marginTop: 10}}>
             { (typeof opt.backStep !== 'undefined' || '') && <Button size="small" className="float-left" onClick={() => setActiveStep(opt.backStep)}>Back</Button> }
@@ -202,33 +204,41 @@ const Homepage = () => {
       <Step.Group ordered unstackable size="mini" className="hidden-xs mainStepper">
         <Step completed={Boolean(filamentAmount)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
+            <Step.Title>Printer Type</Step.Title>
+            <Step.Description>Define your printer</Step.Description>
+          </Step.Content>
+        </Step>
+
+        <Step completed={Boolean(filamentAmount)} active={activeStep === 1} onClick={() => setActiveStep(1)}>
+          <Step.Content>
             <Step.Title>Materials</Step.Title>
             <Step.Description>Weigh your materials</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={Boolean(totalPrintTime) && Boolean(printWeight)} active={activeStep === 1} onClick={() => setActiveStep(1)}>
+        <Step completed={Boolean(totalPrintTime) && Boolean(printWeight)} active={activeStep === 2} onClick={() => setActiveStep(2)}>
           <Step.Content>
             <Step.Title>Print Output</Step.Title>
             <Step.Description>Measure your print time</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={Boolean(totalPrintEnergyConsumption)} active={activeStep === 2} onClick={() => setActiveStep(2)}>
+        <Step completed={Boolean(totalPrintEnergyConsumption)} active={activeStep === 3} onClick={() => setActiveStep(3)}>
           <Step.Content>
             <Step.Title>Power Consumption</Step.Title>
             <Step.Description>Estimate your power consumption</Step.Description>
           </Step.Content>
         </Step>
 
-        <Step completed={Boolean(totalPrintCostPerGram) && Boolean(totalPrintCostPerHour)} active={activeStep === 3} onClick={() => setActiveStep(3)}>
+        <Step completed={Boolean(totalPrintCostPerGram) && Boolean(totalPrintCostPerHour)} active={activeStep === 4} onClick={() => setActiveStep(4)}>
           <Step.Content>
             <Step.Title>Results</Step.Title>
           </Step.Content>
         </Step>
       </Step.Group>
 
-      { /* Filament */}
+
+      { /* Printer Type */}
       <Container style={{display: activeStep === 0 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
           {/* Printer Settings */}
@@ -237,7 +247,18 @@ const Homepage = () => {
             <Header.Subheader>Select printer type</Header.Subheader>
           </Header>
 
-          <Grid columns='equal'>
+          <Container style={{paddingTop: 30, paddingBottom: 20}}>
+            { (printerType === 'fdm' || '') &&
+              <Container textAlign="center"><Image src={ender3v2} className="logo" verticalAlign="middle" width={300}/></Container>
+            }
+
+            { (printerType === 'sla' || '') &&
+              <Container textAlign="center"><Image src={anycubic} className="logo" verticalAlign="middle" width={120}/></Container>
+            }
+
+          </Container>
+
+          <Grid columns='equal' textAlign="center">
             <Grid.Column width={4}>
               <Form.Field>
                 <Radio label='FDM' name='printerType' value='fdm'  onChange={(_e, data) => setPrinterType(data.value)} defaultChecked checked={printerType === 'fdm'}/>
@@ -250,8 +271,16 @@ const Homepage = () => {
               </Form.Field>
             </Grid.Column>
           </Grid>
-        
+      
+        </Form>
+        <Paginator nextStep={1}/>
+        <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
+      </Container>
 
+
+      { /* Filament */}
+      <Container style={{display: activeStep === 1 ? 'block': 'none'}}>
+        <Form style={{paddingTop: 30}}>
           {/* Filament */}
           { (printerType === 'fdm' || '') &&
             <>
@@ -297,12 +326,12 @@ const Homepage = () => {
           }
 
         </Form>
-        <Paginator nextStep={1}/>
+        <Paginator nextStep={2} backStep={0}/>
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
       </Container>
 
       { /* Print Output */}
-      <Container style={{display: activeStep === 1 ? 'block': 'none'}}>
+      <Container style={{display: activeStep === 2 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Print Output
@@ -327,13 +356,13 @@ const Homepage = () => {
               <p><Icon name='info' />You have a total print time of <b>{totalPrintTime}</b> minute(s)</p>
             </Message>
           }
-          <Paginator nextStep={2} backStep={0}/>
+          <Paginator nextStep={3} backStep={1}/>
           <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='print' /></Divider>
         </Form>
       </Container>
       
       { /* Power Consumption */}
-      <Container style={{display: activeStep === 2 ? 'block': 'none'}}>
+      <Container style={{display: activeStep === 3 ? 'block': 'none'}}>
         <Form style={{paddingTop: 30}}>
           <Header as='h3' dividing>
             Power Consumption
@@ -387,14 +416,14 @@ const Homepage = () => {
 
           <Form.Field>
             <label>Estimated Amount/hour <b>(PHP)</b></label>
-            <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
+            <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption || ''} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
           </Form.Field>
         </Form>
-        <Paginator nextStep={3} backStep={1}/>
+        <Paginator nextStep={4} backStep={2}/>
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='plug' /></Divider>
       </Container>
 
-      <Container style={{display: activeStep === 3 ? 'block': 'none'}} className='totalPrintCostSegmentContainer'>
+      <Container style={{display: activeStep === 4 ? 'block': 'none'}} className='totalPrintCostSegmentContainer'>
       { /* Total Printing Cost*/}
         <Segment style={{border: 'none', boxShadow: 'none'}} className="totalPrintCostSegment">
           <Grid columns={2} stackable>
@@ -494,7 +523,7 @@ const Homepage = () => {
               </Label>
             </p>
           </Form>
-          <Paginator backStep={2}/>
+          <Paginator backStep={3}/>
         </Segment>
       </Container>
     </Container>
