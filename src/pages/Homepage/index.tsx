@@ -69,15 +69,15 @@ const Homepage = () => {
   const currencyOptions = [
     {
       key: 'php',
-      text: 'PHP',
+      text: 'PHP(Philippine Peso)',
       value: 'PHP',
-      content: 'PHP',
+      content: 'PHP(Philippine Peso)',
     },
     {
       key: 'usd',
-      text: 'USD',
+      text: 'USD(U.S. Dollar)',
       value: 'USD',
-      content: 'USD',
+      content: 'USD(U.S. Dollar)',
     },
   ]
 
@@ -388,11 +388,11 @@ const Homepage = () => {
                 <input type="number" placeholder='Kilogram' min={0} value={filamentWeight || ''} onChange={(e) => setFilamentWeight(e.target.value)}/>
               </Form.Field>
               <Form.Field>
-                <label>Price <b>(PHP)</b></label>
+                <label>Price <b>({currency})</b></label>
                 <input type="number" placeholder='Enter Amount' min={0} value={filamentPrice || ''} onChange={(e) => setFilamentPrice(e.target.value)}/>
               </Form.Field>
               <Form.Field>
-                <label>Estimated Amount Per Gram <b>(PHP)</b></label>
+                <label>Estimated Amount Per Gram <b>({currency})</b></label>
                 <input type="text" placeholder='Total Amount Per Gram' value={!isNaN(filamentAmount.toFixed(2)) ? new Intl.NumberFormat('en', currencyConfig).format(filamentAmount.toFixed(2)): ''}  readOnly disabled/>
               </Form.Field>
             </>
@@ -410,11 +410,11 @@ const Homepage = () => {
                 <input type="number" placeholder='Liter' min={0} value={filamentWeight || ''} onChange={(e) => setFilamentWeight(e.target.value)}/>
               </Form.Field>
               <Form.Field>
-                <label>Price <b>(PHP)</b></label>
+                <label>Price <b>({currency})</b></label>
                 <input type="number" placeholder='Enter Amount' min={0} value={filamentPrice || ''} onChange={(e) => setFilamentPrice(e.target.value)}/>
               </Form.Field>
               <Form.Field>
-                <label>Estimated Amount Per Mililiter(ml) <b>(PHP)</b></label>
+                <label>Estimated Amount Per Mililiter(ml) <b>({currency})</b></label>
                 <input type="text" placeholder='Total Amount Per Mililiter(ml)' value={!isNaN(filamentAmount.toFixed(2)) ? new Intl.NumberFormat('en', currencyConfig).format(filamentAmount.toFixed(2)): ''}  readOnly disabled/>
               </Form.Field>
             </>
@@ -492,8 +492,8 @@ const Homepage = () => {
 
             { /* Power Consumption Results */}
             { ((powerMonthlyConsumption && powerMonthlyDue) || '') && <Message size='tiny' color='green'>
-                <p><Icon name='info' />You have a total energy consumption of PHP <u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)).toFixed(2) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
-                <em> <Label>hourly</Label> rate of <Label>PHP{(((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0)).toFixed(2) }</Label></em> equivalent to <u>{powerConsumptionPerHour.toFixed(2)}kWh</u>
+                <p><Icon name='info' />You have a total energy consumption of {currency}<u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)).toFixed(2) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
+                <em> <Label>hourly</Label> rate of <Label>{currency}{(((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0)).toFixed(2) }</Label></em> equivalent to <u>{powerConsumptionPerHour.toFixed(2)}kWh</u>
                 </p><br/>
                 <p>Please enter your power supply's wattage to get more acurate results</p>
                 <Image as='div' src={watts} width={'100%'} className='bill'/>
@@ -502,7 +502,7 @@ const Homepage = () => {
                   <input type="number" placeholder='Watts' min={0} style={{width: '90%'}} value={printerRatedPower || ''} onChange={(e) => setPrinterRatedPower(e.target.value)}/>
                 </Form.Field>
                 { ((printerPowerEnergyConsumption && printerRatedPower) || '') && 
-                  <p style={{color: 'red'}}>New total energy consumption: PHP<u>{printerPowerEnergyConsumption.toFixed(2)}</u>/kWh <br/>
+                  <p style={{color: 'red'}}>New total energy consumption: {currency}<u>{printerPowerEnergyConsumption.toFixed(2)}</u>/kWh <br/>
                   Estimated hourly consumption: <u>{printerPowerConsumptionPerHour.toFixed(2)}kW</u></p>
                 }
               </Message>
@@ -510,7 +510,7 @@ const Homepage = () => {
           </details>
 
           <Form.Field>
-            <label>Estimated Amount/hour <b>(PHP)</b></label>
+            <label>Estimated Amount/hour <b>({currency})</b></label>
             <input type="number" placeholder='Energy Consumption per kWh' min={0} value={totalPrintEnergyConsumption || ''} onChange={(e) => setTotalPrintEnergyConsumption(e.target.value)}/>
           </Form.Field>
         </Form>
