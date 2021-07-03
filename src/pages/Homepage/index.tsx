@@ -69,15 +69,15 @@ const Homepage = () => {
   const currencyOptions = [
     {
       key: 'php',
-      text: 'PHP',
+      text: 'PHP(Philippine Peso)',
       value: 'PHP',
-      content: 'PHP',
+      content: 'PHP(Philippine Peso)',
     },
     {
       key: 'usd',
-      text: 'USD',
+      text: 'USD(U.S. Dollar)',
       value: 'USD',
-      content: 'USD',
+      content: 'USD(U.S. Dollar)',
     },
   ]
 
