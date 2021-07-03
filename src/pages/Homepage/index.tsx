@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox, Segment, Radio } from 'semantic-ui-react'
+import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox, Segment, Radio, Modal, Dropdown, Transition } from 'semantic-ui-react'
+import { jsPDF } from "jspdf"
+import { SimpleTemplate } from '../../templates/simple'
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
 import watts from './assets/img/watts.png'
-import ender3v2 from './assets/img/ender3v2.png'
+import prusa from './assets/img/prusa-mk3s.jpeg'
 import anycubic from './assets/img/anycubic.png'
 import './index.css'
 
 const Homepage = () => {
-  const currencyConfig = {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    currencyDisplay: "symbol",
-  };
-
+  const [currency, setCurrency] : any = useState <string>('PHP')
   const [activeStep, setActiveStep] : any = useState <number>(0)
   const [showOtherChargingOptions, setShowOtherChargingOptions] : any = useState <boolean>(false)
   const [filamentWeight, setFilamentWeight] : any = useState <number >(0);
@@ -24,8 +20,13 @@ const Homepage = () => {
   const [printTimeHours, setPrintTimeHours]: any = useState <number | string>(0);
   const [printTimeMinutes, setPrintTimeMinutes]: any = useState <number | string>(0);
 
+  // modal name settings
+  const [modelInputModalIsVisible, setModelInputModalIsVisible] = useState <boolean>(false)
+  const [modelName, setModelName] = useState <string>('')
+
   // printer settings
   const [printerType, setPrinterType] : any = useState <string>('fdm')
+  const [scaleAnimationVisibility, setScaleAnimationVisibility]:any = useState <boolean>(false)
   
   // power consumption from recent bill
   const [powerMonthlyConsumption, setPowerMonthlyConsumption]: any = useState <number | string>(0);
@@ -44,11 +45,12 @@ const Homepage = () => {
   const [profit, setProfit]: any = useState <number>(0);
 
   // additional options
-  const [setupFee, setSetupFee] : any = useState <number>(0)
-  const [packagingFee, setPackagingFee] : any = useState <number>(0)
-  const [deliveryFee, setDeliveryFee] : any = useState <number>(0)
-  const [laborFee, setLaborFee] : any = useState <number>(0)
-  const [otherFee, setOtherFee] : any = useState <number>(0)
+  const [setupFee, setSetupFee] : any = useState <number | string>(0)
+  const [packagingFee, setPackagingFee] : any = useState <number | string>(0)
+  const [deliveryFee, setDeliveryFee] : any = useState <number | string>(0)
+  const [laborFee, setLaborFee] : any = useState <number | string>(0)
+  const [otherFee, setOtherFee] : any = useState <number | string>(0)
+  const [totalOtherCost, setTotalOtherCost]: any = useState <number>(0);
   
   // computed total amount
   const [totalPrintTime, setTotalPrintTime]: any = useState <number | string>(0);
@@ -56,6 +58,94 @@ const Homepage = () => {
   const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState <number | string>(0);
   const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState <number | string>(0);
   
+  // currency settings
+  const currencyConfig = {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    currencyDisplay: "symbol",
+  }
+
+  const currencyOptions = [
+    {
+      key: 'php',
+      text: 'PHP',
+      value: 'PHP',
+      content: 'PHP',
+    },
+    {
+      key: 'usd',
+      text: 'USD',
+      value: 'USD',
+      content: 'USD',
+    },
+  ]
+
+
+  /**
+   * Export to PDF
+   */
+  const exportToPDF : any = () => {
+    const doc = new jsPDF('p', 'pt', 'a4', true)
+    doc.setFontSize(12)
+    const simpleTemplate = new SimpleTemplate({
+      model: {
+        materialCost: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format((totalPrintCostPerGram || 0).toFixed(2)),
+        electricityCost: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format((totalPrintCostPerHour || 0).toFixed(2)),
+        markup,
+        markupCost: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(totalMarkup.toFixed(2)),
+      },
+      others: {
+        setupFee: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(setupFee || 0),
+        packagingFee: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(packagingFee || 0),
+        deliveryFee: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(deliveryFee || 0),
+        otherFee: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(otherFee || 0),
+      },
+      total: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(totalCostWithMarkup || 0),
+      currency,
+      modelName,
+      printerType,
+      materials: {
+        filamentWeight,
+        filamentPrice: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(filamentPrice || 0),
+        filamentAmount: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(filamentAmount || 0),
+      },
+      printOutput: {
+        printWeight,
+        printTimeHours,
+        printTimeMinutes
+      },
+      laborFee: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(laborFee || 0),
+    })
+
+    doc.setFontSize(8);
+    doc.text(`Generated: ${new Date()}`, 50, doc.internal.pageSize.height - 10)
+    doc.html(simpleTemplate.render(),{
+      callback: function (doc) {
+        doc.save(modelName.length ? modelName : '3dpCalc PDF')
+        // uncomment the code below to allow debug mode
+        // window.open(URL.createObjectURL(doc.output("blob")))
+      }
+    })
+
+  }
+
+  const Paginator = (opt:any = {}) => {
+    return(
+      <Grid style={{marginTop: 20}}>
+        <Grid.Row>
+          <Grid.Column width={3} style={{marginTop: 10}}>
+            { (typeof opt.backStep !== 'undefined' || '') && <Button size="small" className="float-left" onClick={() => setActiveStep(opt.backStep)}>Back</Button> }
+          </Grid.Column>
+          { (typeof opt.controls === 'undefined' || '') && <Grid.Column width={10}></Grid.Column> }
+          <Grid.Column width={3} style={{marginTop: 10}}>
+            { (opt.nextStep || '') && <Button size="small" className="float-right" onClick={() => setActiveStep(opt.nextStep)} secondary>Next</Button> }
+          </Grid.Column>
+          { (typeof opt.controls !== 'undefined' || '') && opt.controls }
+        </Grid.Row>
+      </Grid>
+    );
+  }
 
   /**
    * Filament / Material
@@ -144,10 +234,11 @@ const Homepage = () => {
   useEffect(() => {
     let __totalPrice: number = parseFloat(totalPrintCostPerGram || 0) + parseFloat(totalPrintCostPerHour || 0)
     let __markup: number = __totalPrice * (parseFloat(markup || 0) / 100)
-    let __total: number = __totalPrice + __markup
-    let __totalOtherChargingOptions = parseFloat(setupFee || 0) + parseFloat(deliveryFee || 0) + parseFloat(packagingFee || 0) +  parseFloat(laborFee || 0) +  parseFloat(otherFee || 0)
+    let __total: number = __totalPrice + __markup +  parseFloat(laborFee || 0)
+    let __totalOtherChargingOptions = parseFloat(setupFee || 0) + parseFloat(deliveryFee || 0) + parseFloat(packagingFee || 0)  +  parseFloat(otherFee || 0)
     setTotalMarkup(__markup)
-    setProfit (__markup + __totalOtherChargingOptions)
+    setProfit (__markup +  parseFloat(laborFee || 0))
+    setTotalOtherCost (__totalOtherChargingOptions)
     setTotalCostWithMarkup (__total + __totalOtherChargingOptions)
   }, [totalPrintCostPerHour, totalPrintCostPerGram, markup, setupFee, deliveryFee, packagingFee, otherFee, laborFee, showOtherChargingOptions])
 
@@ -161,21 +252,21 @@ const Homepage = () => {
     setDeliveryFee(0)
   }, [showOtherChargingOptions])
 
-  const Paginator = (opt:any = {}) => {
-    return(
-      <Grid style={{marginTop: 20}}>
-        <Grid.Row>
-          <Grid.Column width={3} style={{marginTop: 10}}>
-            { (typeof opt.backStep !== 'undefined' || '') && <Button size="small" className="float-left" onClick={() => setActiveStep(opt.backStep)}>Back</Button> }
-          </Grid.Column>
-          <Grid.Column width={10}></Grid.Column>
-          <Grid.Column width={3} style={{marginTop: 10}}>
-            { (opt.nextStep || '') && <Button size="small" className="float-right" onClick={() => setActiveStep(opt.nextStep)} secondary>Next</Button> }
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
-    );
-  }
+  /**
+   * Show model name modal with delay
+   */
+  useEffect(() => {
+    setTimeout(() => setModelInputModalIsVisible (true), 1500)
+  }, [])
+  /**
+   * Printer type animation
+   */
+  useEffect(() => {
+    setScaleAnimationVisibility(false)
+    setTimeout(() => {
+      setScaleAnimationVisibility(true)
+    }, 1)
+  }, [printerType])
 
   return (
     <Container text>
@@ -202,7 +293,7 @@ const Homepage = () => {
 
       { /* Main Navigation */}
       <Step.Group ordered unstackable size="mini" className="hidden-xs mainStepper">
-        <Step completed={Boolean(filamentAmount)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
+        <Step completed={Boolean(printerType)} active={activeStep === 0} onClick={() => setActiveStep(0)}>
           <Step.Content>
             <Step.Title>Printer Type</Step.Title>
             <Step.Description>Define your printer</Step.Description>
@@ -249,13 +340,18 @@ const Homepage = () => {
 
           <Container style={{paddingTop: 30, paddingBottom: 20}}>
             { (printerType === 'fdm' || '') &&
-              <Container textAlign="center"><Image src={ender3v2} className="logo" verticalAlign="middle" width={300}/></Container>
+              <Transition visible={scaleAnimationVisibility} animation='scale' duration={500}>
+                <Container textAlign="center">
+                  <Image src={prusa} className="logo" verticalAlign="middle" width={270}/>
+                </Container>
+              </Transition>
             }
 
             { (printerType === 'sla' || '') &&
-              <Container textAlign="center"><Image src={anycubic} className="logo" verticalAlign="middle" width={120}/></Container>
+              <Transition visible={scaleAnimationVisibility} animation='scale' duration={500}>
+                <Container textAlign="center"><Image src={anycubic} className="logo" verticalAlign="middle" width={120}/></Container>
+              </Transition>
             }
-
           </Container>
 
           <Grid columns='equal' textAlign="center">
@@ -271,7 +367,6 @@ const Homepage = () => {
               </Form.Field>
             </Grid.Column>
           </Grid>
-      
         </Form>
         <Paginator nextStep={1}/>
         <Divider style={{marginBottom: 50, marginTop: 50}} horizontal><Icon name='cube' /></Divider>
@@ -457,29 +552,31 @@ const Homepage = () => {
                 { /* Markup */}
                 <Form style={{paddingTop: 20}}>
                   <Header as='h3' dividing>Markup</Header>
-                  <label>Percentage %</label>
-                  <input type="number" placeholder='Energy Consumption per kWh' min={0} value={markup || ''} onChange={(e) => setMarkup(e.target.value)}/>
-                  { (totalMarkup || '') && <p style={{margin: 5}}><Label color='teal'>
-                        <Icon name='plus'/> Markup
-                        <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(totalMarkup.toFixed(2))}</Label.Detail>
-                      </Label>
-                    </p>
-                  }
+                  <Form.Field>
+                    <label>Percentage %</label>
+                    <input type="number" placeholder='Energy Consumption per kWh' min={0} value={markup || ''} onChange={(e) => setMarkup(e.target.value)}/>
+                    { (totalMarkup || '') && <p style={{margin: 5}}><Label color='teal'>
+                          <Icon name='plus'/> Markup
+                          <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(totalMarkup.toFixed(2))}</Label.Detail>
+                        </Label>
+                      </p>
+                    }
+                  </Form.Field>
+
+                  <Form.Field>
+                    <label>Labor Fee (pre and post processing)</label>
+                    <input type="number" placeholder='Enter Amount' min={0} value={laborFee || ''} onChange={(e) => setLaborFee(e.target.value)}/>
+                  </Form.Field>
                 </Form>
 
                 { /* Other Charging Options */}
                 <Form style={{paddingTop: 30}}> 
-                  <p><Checkbox label='Show other charging options' onChange={(_e, data) => setShowOtherChargingOptions(data.checked)} /></p>
+                  <p><Checkbox label='Show other charging options (expenses only)' onChange={(_e, data) => setShowOtherChargingOptions(data.checked)} /></p>
                   { (showOtherChargingOptions || '') &&
                     <Container>
                       <Form.Field>
                         <label>Setup Fee (initial setup)</label>
                         <input type="number" placeholder='Enter Amount' min={0} value={setupFee || ''} onChange={(e) => setSetupFee(e.target.value)}/>
-                      </Form.Field>
-
-                      <Form.Field>
-                        <label>Labor Fee (pre and post processing)</label>
-                        <input type="number" placeholder='Enter Amount' min={0} value={laborFee || ''} onChange={(e) => setLaborFee(e.target.value)}/>
                       </Form.Field>
 
                       <Form.Field>
@@ -513,8 +610,12 @@ const Homepage = () => {
                 <Icon name='check circle'/> Model Cost
                 <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(((totalPrintCostPerHour || 0) + (totalPrintCostPerGram || 0)).toFixed(2))}</Label.Detail>
               </Label>
+              <Label color='teal' style={{margin: 5}}>
+                <Icon name='check circle'/> Other Cost
+                <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(totalOtherCost.toFixed(2))}</Label.Detail>
+              </Label><br/>
               <Label color='yellow' style={{margin: 5}}>
-                <Icon name='check circle'/> Profit (markup + other charges)
+                <Icon name='check circle'/> Profit (markup + labor fee)
                 <Label.Detail>{new Intl.NumberFormat('en', currencyConfig).format(profit.toFixed(2))}</Label.Detail>
               </Label><br/>
               <Label color='green' style={{margin: 5}}>
@@ -523,11 +624,52 @@ const Homepage = () => {
               </Label>
             </p>
           </Form>
-          <Paginator backStep={3}/>
+          <Paginator controls={
+              <Grid.Column width={16} style={{ marginTop: 10}} textAlign="right">
+                <Button.Group>
+                  <Button size="small" onClick={() => exportToPDF() } secondary icon>
+                    <span className="computer only">Download&nbsp;</span>
+                    <Icon name="file pdf"/> 
+                  </Button>
+                  <Button size="small" onClick={() => setModelInputModalIsVisible(true)} secondary icon style={{opacity: 0.9}}>
+                    <Icon name="chevron up"/> 
+                  </Button>
+                </Button.Group>
+                <Button size="small" className="float-left" onClick={() => setActiveStep(3)}>Back</Button>
+            </Grid.Column>
+          }/>
         </Segment>
       </Container>
+
+      <Modal open={modelInputModalIsVisible}>
+      <Modal.Content>
+        <Modal.Description>
+          <Header>
+            <Icon name='cogs' />
+            <Header.Content>Configurations</Header.Content>
+          </Header>
+          <Header as="h4">Model Name</Header>
+          <p>
+            Please input your preferred model name. This will be used
+            as the default filename for the PDF export.<br/>You may leave this blank if you want us to automatically generate it for you.
+          </p>
+          <Form onSubmit={() => setModelInputModalIsVisible(false)}>
+            <Form.Field>
+              <input type="text" maxLength={50} placeholder="Model Name: maximum length is 50 characters" onChange={(e) => setModelName(e.target.value)} defaultValue={modelName}/>
+            </Form.Field>
+          </Form>
+          <Header as="h4"><b>Please select your default currency</b></Header>
+          <Dropdown inline header='Currency' options={currencyOptions} defaultValue={currency} onChange={(_e, { value }) => {
+            setCurrency(value)
+          }}/>
+        </Modal.Description>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button color='black' onClick={() => setModelInputModalIsVisible(false)}>Done</Button>
+      </Modal.Actions>
+    </Modal>
     </Container>
-  );
+  )
 }
 
 export default Homepage
