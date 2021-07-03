@@ -659,7 +659,7 @@ const Homepage = () => {
             </Form.Field>
           </Form>
           <Header as="h4"><b>Please select your default currency</b></Header>
-          <Dropdown inline header='Currency' options={currencyOptions} defaultValue={currencyOptions[0].value} onChange={(_e, { value }) => {
+          <Dropdown inline header='Currency' options={currencyOptions} defaultValue={currency} onChange={(_e, { value }) => {
             setCurrency(value)
           }}/>
         </Modal.Description>
