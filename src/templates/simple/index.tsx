@@ -8,6 +8,8 @@ interface PrintableData {
   materials: any,
   printOutput?: any,
   laborFee?: any,
+  customerInfo?: any,
+  showCustomerInfoSettings?: boolean,
 }
 
 class SimpleTemplate {
@@ -42,7 +44,20 @@ class SimpleTemplate {
         <main style="padding: 20px;padding-top: 5px;font-size: 10px;">
           <div style="white-space: nowrap;">
             <h3 style="font-size: 12px;">General&nbsp;Information</h3>
-            <div style="width: 550px; height:auto;background:rgba(240,240,240,0.6);padding: 5px;">
+            ${
+              (this.data.showCustomerInfoSettings || '') && `
+                <div style="width: 550px; height:auto;background:rgba(240,240,240,0.6);padding: 5px;">
+                  <p style="font-size: 8px;">
+                    <b>Customer's Information</b>
+                  </p>
+                </div>
+                <p style="width: 550px;padding-left: 5px;">Full Name: <span style="float:right;">${this.data.customerInfo.name || ''}</span></p>
+                <p style="width: 550px;padding-left: 5px;">Address: <span style="float:right;">${this.data.customerInfo.address || ''}</span></p>
+                <p style="width: 550px;padding-left: 5px;">Mobile Number: <span style="float:right;">${this.data.customerInfo.mobileNumber || ''}</span></p>
+                <p style="width: 550px;padding-left: 5px;">Email Address: <span style="float:right;">${this.data.customerInfo.emailAddress || ''}</span></p>
+              </>`
+            }
+             <div style="width: 550px; height:auto;background:rgba(240,240,240,0.6);padding: 5px;">
               <p style="font-size: 8px;">
                 <b>Materials</b>
                 <span style="float:right;font-weight:bold;text-transform: uppercase;">${this.data.printerType}</span>

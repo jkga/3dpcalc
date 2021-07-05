@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Header, Form, Icon, Menu, Image, Divider, Step, Message, Label, Grid, Button, Checkbox, Segment, Radio, Modal, Dropdown, Transition } from 'semantic-ui-react'
 import { jsPDF } from "jspdf"
+import Highcharts from 'highcharts'
+import HighchartsReact from 'highcharts-react-official'
 import { SimpleTemplate } from '../../templates/simple'
 import Logo from './assets/img/logo.png'
 import bill from './assets/img/bill.png'
@@ -53,11 +55,18 @@ const Homepage = () => {
   const [totalOtherCost, setTotalOtherCost]: any = useState <number>(0);
   
   // computed total amount
-  const [totalPrintTime, setTotalPrintTime]: any = useState <number | string>(0);
-  const [totalPrintCostPerGram, setTotalPrintCostPerGram]: any = useState <number | string>(0);
-  const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState <number | string>(0);
-  const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState <number | string>(0);
+  const [totalPrintTime, setTotalPrintTime]: any = useState <number | string>(0)
+  const [totalPrintCostPerGram, setTotalPrintCostPerGram]: any = useState <number | string>(0)
+  const [totalPrintCostPerHour, setTotalPrintCostPerHour]: any = useState <number | string>(0)
+  const [totalPrintEnergyConsumption, setTotalPrintEnergyConsumption]: any = useState <number | string>(0)
   
+  // customer information
+  const [customerInfo, setCustomerInfo] = useState <any>({})
+  const [showCustomerInfoSettings, setShowCustomerInfoSettings] = useState <boolean | undefined>(false)
+
+  const [chartData, setChartData] = useState <any>([])
+  const [showChart, setShowChart] = useState <boolean>(false)
+
   // currency settings
   const currencyConfig = {
     style: "currency",
@@ -80,6 +89,35 @@ const Homepage = () => {
       content: 'USD(U.S. Dollar)',
     },
   ]
+
+  const chartOptions: Highcharts.Options = {
+    title: {
+      text: `${modelName ? modelName.toUpperCase() : ''}`
+    },
+    chart: {
+      type: 'pie',
+    },
+    tooltip: {
+      pointFormat: currency + ' : <b>{point.y}</b>'
+    },
+    credits: {
+      enabled: false
+    },
+    plotOptions: {
+      pie: {
+        allowPointSelect: true,
+        cursor: 'pointer',
+        dataLabels: {
+          enabled: true,
+          format: '<b>{point.name}</b>: {point.percentage:.1f}%'
+        }
+      }
+    },
+    series: [{
+      type: 'pie',
+      data: chartData,
+    }]
+  }
 
 
   /**
@@ -116,6 +154,8 @@ const Homepage = () => {
         printTimeMinutes
       },
       laborFee: new Intl.NumberFormat('en', {minimumFractionDigits: 2}).format(laborFee || 0),
+      customerInfo,
+      showCustomerInfoSettings,
     })
 
     doc.setFontSize(8);
@@ -145,6 +185,12 @@ const Homepage = () => {
         </Grid.Row>
       </Grid>
     );
+  }
+
+  const setField = (state: any, field:any, val:string | boolean | number, callback:(s: any) => void) => {
+    let __state = {...state}
+    __state[field] = val
+    return callback(__state)
   }
 
   /**
@@ -253,12 +299,6 @@ const Homepage = () => {
   }, [showOtherChargingOptions])
 
   /**
-   * Show model name modal with delay
-   */
-  useEffect(() => {
-    setTimeout(() => setModelInputModalIsVisible (true), 1500)
-  }, [])
-  /**
    * Printer type animation
    */
   useEffect(() => {
@@ -267,6 +307,45 @@ const Homepage = () => {
       setScaleAnimationVisibility(true)
     }, 1)
   }, [printerType])
+
+  /**
+   * Show model name modal with delay
+   */
+  useEffect(() => {
+    setTimeout(() => setModelInputModalIsVisible (true), 1500)
+  }, [])
+
+  useEffect(() => {
+    setChartData([
+      {
+        name: 'Materials',
+        y: totalPrintCostPerGram,
+        sliced: true,
+        selected: true
+      }, {
+        name: 'Printing',
+        y: parseFloat(totalPrintCostPerHour)
+      }, {
+        name: 'Markup',
+        y: parseFloat(totalMarkup)
+      }, {
+        name: 'Labor',
+        y: parseFloat(laborFee)
+      }, {
+        name: 'Setup',
+        y: parseFloat(setupFee)
+      },  {
+        name: 'Packaging',
+        y: parseFloat(packagingFee)
+      }, {
+        name: 'Delivery',
+        y: parseFloat(deliveryFee)
+      }, {
+        name: 'Others',
+        y: parseFloat(otherFee)
+      }
+    ])
+  }, [totalPrintCostPerGram, totalPrintCostPerHour, totalMarkup, laborFee, setupFee, deliveryFee, packagingFee, otherFee])
 
   return (
     <Container text>
@@ -624,6 +703,13 @@ const Homepage = () => {
               </Label>
             </p>
           </Form>
+          { showChart &&
+            <Container style={{marginTop: 50}}>
+              <Transition visible={showChart} animation='scale' duration={500}>
+                <HighchartsReact highcharts={Highcharts} options={chartOptions}/>
+              </Transition>
+            </Container>
+          }
           <Paginator controls={
               <Grid.Column width={16} style={{ marginTop: 10}} textAlign="right">
                 <Button.Group>
@@ -631,7 +717,10 @@ const Homepage = () => {
                     <span className="computer only">Download&nbsp;</span>
                     <Icon name="file pdf"/> 
                   </Button>
-                  <Button size="small" onClick={() => setModelInputModalIsVisible(true)} secondary icon style={{opacity: 0.9}}>
+                  <Button size="small" onClick={() => setShowChart (!showChart)} secondary icon style={{opacity: 0.9}}>
+                    <Icon name="chart pie"/> 
+                  </Button>
+                  <Button size="small" onClick={() => setModelInputModalIsVisible(true)} secondary icon style={{opacity: 0.8}}>
                     <Icon name="chevron up"/> 
                   </Button>
                 </Button.Group>
@@ -654,14 +743,52 @@ const Homepage = () => {
             as the default filename for the PDF export.<br/>You may leave this blank if you want us to automatically generate it for you.
           </p>
           <Form onSubmit={() => setModelInputModalIsVisible(false)}>
-            <Form.Field>
-              <input type="text" maxLength={50} placeholder="Model Name: maximum length is 50 characters" onChange={(e) => setModelName(e.target.value)} defaultValue={modelName}/>
-            </Form.Field>
+            <Form.Group>
+              <Form.Field>
+                <input type="text" maxLength={50} placeholder="Model Name: maximum length is 50 characters" onChange={(e) => setModelName(e.target.value)} defaultValue={modelName}/>
+              </Form.Field>
+            </Form.Group>
+            <Form.Group style={{marginTop: 30}}>
+              <Header as="h4"><b>Please select your default currency</b></Header>
+            </Form.Group>
+            <Form.Group>
+              <Dropdown inline header='Currency' options={currencyOptions} defaultValue={currency} onChange={(_e, { value }) => {
+                setCurrency(value)
+              }}/>
+            </Form.Group><br/>
+            <Divider/>
+              <Form.Group>
+                <Checkbox label="Customer's Information" toggle onChange={(_e, data) => { setShowCustomerInfoSettings(data.checked)}} defaultChecked={showCustomerInfoSettings}/>
+              </Form.Group>
+              { showCustomerInfoSettings && <>
+              <Form.Group>
+                <Form.Field>
+                  <label>Customer Name</label>
+                  <input type="text" placeholder="Full Name" style={{width: 300}} onChange={(e) => setField(customerInfo, 'name', e.target.value, setCustomerInfo)} defaultValue={customerInfo.name}/>
+                </Form.Field>
+              </Form.Group>
+              <Form.Group>
+                <Form.Field>
+                  <label>Address</label>
+                  <input type="text" placeholder="Address" style={{width: 300}} onChange={(e) => setField(customerInfo, 'address', e.target.value, setCustomerInfo)} defaultValue={customerInfo.address}/>
+                </Form.Field>
+                <Form.Field>
+                  <label>Mobile Number</label>
+                  <input type="number" placeholder="Mobile Information" style={{width: 300}} onChange={(e) => setField(customerInfo, 'mobileNumber', e.target.value, setCustomerInfo)} defaultValue={customerInfo.mobileNumber}/>
+                </Form.Field>
+              </Form.Group>
+              <Form.Group>
+                <Form.Field>
+                  <label>Email Address</label>
+                  <Form.Input type="email" placeholder="Email@" style={{width: 300}} required={false} onChange={(e) => {
+                    setField(customerInfo, 'isValidEmailAddress', e.target.checkValidity() , setCustomerInfo)
+                    setTimeout(() => setField(customerInfo, 'emailAddress', e.target.value, setCustomerInfo), 1000)
+                  }} error={customerInfo.isValidEmailAddress===false} defaultValue={customerInfo.emailAddress}/>
+                </Form.Field>
+              </Form.Group></>
+            }
           </Form>
-          <Header as="h4"><b>Please select your default currency</b></Header>
-          <Dropdown inline header='Currency' options={currencyOptions} defaultValue={currency} onChange={(_e, { value }) => {
-            setCurrency(value)
-          }}/>
+          
         </Modal.Description>
       </Modal.Content>
       <Modal.Actions>
