@@ -36,7 +36,6 @@ const Homepage = () => {
   const [powerConsumptionPerHour, setPowerConsumptionPerHour]: any = useState <number | string>(0);
 
   // power consumption
-  const [printerPowerEnergyConsumption, setPrinterPowerEnergyConsumption]: any = useState <number | string>(0);
   const [printerPowerConsumptionPerHour, setPrinterPowerConsumptionPerHour]: any = useState <number | string>(0);
   const [printerRatedPower, setPrinterRatedPower]: any = useState <number | string>(0);
 
@@ -167,7 +166,6 @@ const Homepage = () => {
         // window.open(URL.createObjectURL(doc.output("blob")))
       }
     })
-
   }
 
   const Paginator = (opt:any = {}) => {
@@ -217,43 +215,38 @@ const Homepage = () => {
   useEffect (() => {
     /**
      * Given
-     * You have a total energy consumption of PHP 8.759468599033816 per 0.2875kWh based on your recent usage (30 Days)Hourly Energy Consumption: 2.518347222222222
-     * Printers Rated Power = 35 W
+     * Monthly kWh Consumption: 231
+     * Amount Due: PHP 2286.15
+     * You have a total energy consumption of PHP 9.896 per 0.3208kWh based on your recent usage (30 Days)
+     * Hourly Energy Consumption: PHP 3.1752
+     * Printers Rated Power = 35 W (equivalent to 0.35kWh)
      */
 
     // convert watts to kWh
     // 0.35
     let printerRatedKwh: number = printerRatedPower / 1000
 
-    // 0.35 - 0.2875 = 0.0625
-    let excessKwhFromPrinterRatedKwh: any = printerRatedKwh - powerConsumptionPerHour
-
-    // 8.759468599033816
+    // 9.896
     let energyConsumption: any = (parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0))
-
-    // 8.759468599033816 * 0.0625 = 0.547466787439614
-    let exessEnergyConsumption: any = energyConsumption * excessKwhFromPrinterRatedKwh
-
-    // 8.759468599033816 + 0.547466787439614 = 9.30693538647343
-    let newPrinterEnergyConsumption = parseFloat(exessEnergyConsumption) + parseFloat(energyConsumption)
-
+  
     // stop computation for empty printer's wattage
     if(!printerRatedPower) {
-       // convert hours to minutes
-       let energyConsumption: number = parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)
        let kWh: number = parseFloat(powerMonthlyConsumption || 0) / (24 * 30)
        let energyConsumptionPerKwh: number = energyConsumption * kWh
-   
-       // derive kWh from monthly power consumption (30 days only)
-       setPowerConsumptionPerHour (kWh) 
-       setTotalPrintEnergyConsumption(!isNaN(energyConsumption) ? energyConsumptionPerKwh.toFixed(2) : 0)
-      return
+       
+        // derived kWh from monthly power consumption (30 days only)
+        setPowerConsumptionPerHour (kWh) 
+        setTotalPrintEnergyConsumption(!isNaN(energyConsumption) ? energyConsumptionPerKwh.toFixed(2) : 0)
+        return
     }
 
+    // PHP3.18 / 0.35kWh = 0.9142
+    // 3.18 / 0.9142 = 3.4784
+    let __hourlyConsumptionAmount = ((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0)
+    let __newPrintersHourlyConsumption = __hourlyConsumptionAmount / (powerConsumptionPerHour / printerRatedKwh)
+
     // update total energy consumption
-    // 9.30693538647343 * 0.35 = 3.2574273852657005
-    setTotalPrintEnergyConsumption ((newPrinterEnergyConsumption * printerRatedKwh).toFixed(2))
-    setPrinterPowerEnergyConsumption (newPrinterEnergyConsumption)
+    setTotalPrintEnergyConsumption(__newPrintersHourlyConsumption.toFixed(2))
     setPrinterPowerConsumptionPerHour (printerRatedKwh)
   }, [printerRatedPower, powerConsumptionPerHour, powerMonthlyConsumption, powerMonthlyDue])
 
@@ -572,7 +565,7 @@ const Homepage = () => {
             { /* Power Consumption Results */}
             { ((powerMonthlyConsumption && powerMonthlyDue) || '') && <Message size='tiny' color='green'>
                 <p><Icon name='info' />You have a total energy consumption of {currency}<u>{(parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)).toFixed(2) || ''}</u>/kWh  based on your recent usage (30 Days) with an 
-                <em> <Label>hourly</Label> rate of <Label>{currency}{(((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0)).toFixed(2) }</Label></em> equivalent to <u>{powerConsumptionPerHour.toFixed(2)}kWh</u>
+                <em> <Label>hourly</Label> rate of <Label>{currency}{(((parseFloat (powerMonthlyDue || 0) / parseFloat(powerMonthlyConsumption || 0)) || 0) * (powerConsumptionPerHour || 0)).toFixed(2) }</Label></em> per <u>{powerConsumptionPerHour.toFixed(2)}kWh</u>
                 </p><br/>
                 <p>Please enter your power supply's wattage to get more acurate results</p>
                 <Image as='div' src={watts} width={'100%'} className='bill'/>
@@ -580,9 +573,8 @@ const Homepage = () => {
                   <label>Printer's Rated Power <span>(Please refer to your power supply's wattage)</span></label>
                   <input type="number" placeholder='Watts' min={0} style={{width: '90%'}} value={printerRatedPower || ''} onChange={(e) => setPrinterRatedPower(e.target.value)}/>
                 </Form.Field>
-                { ((printerPowerEnergyConsumption && printerRatedPower) || '') && 
-                  <p style={{color: 'red'}}>New total energy consumption: {currency}<u>{printerPowerEnergyConsumption.toFixed(2)}</u>/kWh <br/>
-                  Estimated hourly consumption: <u>{printerPowerConsumptionPerHour.toFixed(2)}kW</u></p>
+                { (printerRatedPower || '') && 
+                  <p style={{color: 'red'}}>Estimated hourly consumption: <u>{printerPowerConsumptionPerHour.toFixed(2)}kW</u></p>
                 }
               </Message>
             }
