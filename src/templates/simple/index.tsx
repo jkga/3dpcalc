@@ -72,7 +72,7 @@ class SimpleTemplate {
                 <b>Output</b>
               </p>
             </div>
-            <p style="width: 550px;padding-left: 5px;">${this.data.printerType === 'sla' ? 'Volume' : 'Weight'}: <span style="float:right;">${this.data.printOutput.printWeight || ''} ${this.data.printerType === 'sla' ? 'liter(s)' : 'kilogram(s)'}</span></p>
+            <p style="width: 550px;padding-left: 5px;">${this.data.printerType === 'sla' ? 'Volume' : 'Weight'}: <span style="float:right;">${this.data.printOutput.printWeight || ''} ${this.data.printerType === 'sla' ? 'liter(s)' : 'gram(s)'}</span></p>
             <p style="width: 550px;padding-left: 5px;">Hour(s): <span style="float:right;">${this.data.printOutput.printTimeHours || ''}h</span></p>
             <p style="width: 550px;padding-left: 5px;">Minute(s): <span style="float:right;">${this.data.printOutput.printTimeMinutes || ''}m</span></p>
           </div>
